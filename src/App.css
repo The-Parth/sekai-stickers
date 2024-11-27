@@ -11,8 +11,8 @@
 }
 
 .canvas {
-  height: 256px;
-  width: 296px;
+  height: 390px;
+  width: 400px;
   border: 1px solid #ddd;
 }
 
@@ -20,12 +20,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 256px;
+  height: 390px;
 }
 
 .horizontal {
-  width: 296px;
-  /* margin-left: -30px; */
+  width: 400px;
+  display: block;
+  margin: 0 auto;
 
 }
 

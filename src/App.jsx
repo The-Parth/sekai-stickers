@@ -43,10 +43,11 @@ function App() {
   };
 
   const [character, setCharacter] = useState(49);
+  const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
   const [position, setPosition] = useState({
-    x: characters[character].defaultText.x,
-    y: characters[character].defaultText.y,
+    x: characters[character].defaultText.x + 150,
+    y: characters[character].defaultText.y + 150,
   });
   const [fontSize, setFontSize] = useState(characters[character].defaultText.s);
   const [spaceSize, setSpaceSize] = useState(1);
@@ -58,8 +59,8 @@ function App() {
   useEffect(() => {
     setText(characters[character].defaultText.text);
     setPosition({
-      x: characters[character].defaultText.x,
-      y: characters[character].defaultText.y,
+      x: characters[character].defaultText.x + 50,
+      y: characters[character].defaultText.y + 60,
     });
     setRotate(characters[character].defaultText.r);
     setFontSize(characters[character].defaultText.s);
@@ -75,13 +76,13 @@ function App() {
   let angle = (Math.PI * text.length) / 7;
 
   const draw = (ctx) => {
-    ctx.canvas.width = 296;
-    ctx.canvas.height = 256;
+    ctx.canvas.width = 400;
+    ctx.canvas.height = 390;
 
     if (loaded && document.fonts.check("12px YurukaStd")) {
       var hRatio = ctx.canvas.width / img.width;
       var vRatio = ctx.canvas.height / img.height;
-      var ratio = Math.min(hRatio, vRatio);
+      var ratio = Math.min(hRatio, vRatio) * scale/100;
       var centerShift_x = (ctx.canvas.width - img.width * ratio) / 2;
       var centerShift_y = (ctx.canvas.height - img.height * ratio) / 2;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -111,7 +112,7 @@ function App() {
           for (let i = 0; i < line.length; i++) {
             ctx.rotate(angle / line.length / 2.5);
             ctx.save();
-            ctx.translate(0, -1 * fontSize * 3.5);
+            ctx.translate(0, -1 * fontSize * 3.6);
             ctx.strokeText(line[i], 0, 0);
             ctx.fillText(line[i], 0, 0);
             ctx.restore();
@@ -197,24 +198,21 @@ function App() {
           </div>
         </div>
       )}
-      <div className="counter">
-        Total Stickers you made: {config?.total || "Not available"}
-      </div>
       <div className="container">
         <div className="vertical">
           <div className="canvas">
             <Canvas draw={draw} />
           </div>
           <Slider
-            value={curve ? 256 - position.y + fontSize * 3 : 256 - position.y}
+            value={curve ? 390 - position.y + fontSize * 3 : 390 - position.y}
             onChange={(e, v) =>
               setPosition({
                 ...position,
-                y: curve ? 256 + fontSize * 3 - v : 256 - v,
+                y: curve ? 390 + fontSize * 3 - v : 390 - v,
               })
             }
             min={0}
-            max={256}
+            max={390}
             step={1}
             orientation="vertical"
             track={false}
@@ -227,12 +225,24 @@ function App() {
             value={position.x}
             onChange={(e, v) => setPosition({ ...position, x: v })}
             min={0}
-            max={296}
+            max={400}
             step={1}
             track={false}
             color="secondary"
           />
           <div className="settings">
+            <div>
+              <label>Scale: </label>
+              <Slider
+                value={scale}
+                onChange={(e, v) => setScale(v)}
+                min={15}
+                max={110}
+                step={1}
+                track={false}
+                color="secondary"
+              />
+            </div>
             <div>
               <label>Rotate: </label>
               <Slider
@@ -298,10 +308,10 @@ function App() {
           </div>
           <div className="buttons">
             <Button color="secondary" onClick={copy}>
-              copy
+              Copy
             </Button>
             <Button color="secondary" onClick={download}>
-              download
+              Download
             </Button>
           </div>
         </div>
