@@ -82,7 +82,7 @@ function App() {
     if (loaded && document.fonts.check("12px YurukaStd")) {
       var hRatio = ctx.canvas.width / img.width;
       var vRatio = ctx.canvas.height / img.height;
-      var ratio = Math.min(hRatio, vRatio) * scale/100;
+      var ratio = (Math.min(hRatio, vRatio) * scale) / 100;
       var centerShift_x = (ctx.canvas.width - img.width * ratio) / 2;
       var centerShift_y = (ctx.canvas.height - img.height * ratio) / 2;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -170,38 +170,25 @@ function App() {
   return (
     <div className="App">
       <Info open={infoOpen} handleClose={handleClose} config={config} />
-      {!bannerView && (
-        <div className="bannercontainer">
-          <div className="bannermessage">
-            <p>New Sekai Stickers mobile app is coming soon</p>
-            <a
-              href="https://link.ayaka.one/boM9XJ"
-              className="bannerbutton"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Learn more <span>&rarr;</span>
-            </a>
-          </div>
-          <div className="bannerdismiss">
-            <button
-              type="button"
-              onClick={() => {
-                setBannerViewed();
-                setBannerView(true);
-              }}
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="header">
+        <h1>Project Sekai Sticker Maker</h1>
+      </div>
       <div className="container">
         <div className="vertical">
-          <div className="canvas">
-            <Canvas draw={draw} />
+          <div className="horizontal">
+            <div className="canvas">
+              <Canvas draw={draw} />
+              <Slider
+                className="slider-horizontal"
+                value={position.x}
+                onChange={(e, v) => setPosition({ ...position, x: v })}
+                min={0}
+                max={400}
+                step={1}
+                track={false}
+                color="secondary"
+              />
+            </div>
           </div>
           <Slider
             value={curve ? 390 - position.y + fontSize * 3 : 390 - position.y}
@@ -220,20 +207,11 @@ function App() {
           />
         </div>
         <div className="horizontal">
-          <Slider
-            className="slider-horizontal"
-            value={position.x}
-            onChange={(e, v) => setPosition({ ...position, x: v })}
-            min={0}
-            max={400}
-            step={1}
-            track={false}
-            color="secondary"
-          />
           <div className="settings">
             <div>
               <label>Scale: </label>
               <Slider
+                className="slider"
                 value={scale}
                 onChange={(e, v) => setScale(v)}
                 min={15}
@@ -246,6 +224,7 @@ function App() {
             <div>
               <label>Rotate: </label>
               <Slider
+                className="slider"
                 value={rotate}
                 onChange={(e, v) => setRotate(v)}
                 min={-10}
@@ -260,6 +239,7 @@ function App() {
                 <nobr>Font size: </nobr>
               </label>
               <Slider
+                className="slider"
                 value={fontSize}
                 onChange={(e, v) => setFontSize(v)}
                 min={10}
@@ -274,6 +254,7 @@ function App() {
                 <nobr>Spacing: </nobr>
               </label>
               <Slider
+                className="slider"
                 value={spaceSize}
                 onChange={(e, v) => setSpaceSize(v)}
                 min={18}
@@ -303,24 +284,29 @@ function App() {
               onChange={(e) => setText(e.target.value)}
             />
           </div>
-          <div className="picker">
-            <Picker setCharacter={setCharacter} />
-          </div>
-          <div className="buttons">
-            <Button color="secondary" onClick={copy}>
-              Copy
-            </Button>
-            <Button color="secondary" onClick={download}>
-              Download
-            </Button>
+          <div className="horizontal">
+            <div className="picker">
+              <Picker setCharacter={setCharacter} />
+            </div>
+            <div className="buttons">
+              <Button color="secondary" onClick={copy}>
+                Copy
+              </Button>
+              <Button color="secondary" onClick={download}>
+                Download
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="footer">
+        
+      </div>
+      <div className="footer">
+          <p>©SEGA / Project Sekai</p>
+          <p>This website is not affiliated with or endorsed by SEGA, Colourful Palette, or Crypton Future Media.</p>
           <Button color="secondary" onClick={handleClickOpen}>
             Info
           </Button>
         </div>
-      </div>
     </div>
   );
 }

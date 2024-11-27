@@ -12,6 +12,23 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
 export default function Info({ open, handleClose, config }) {
+  const dialogStyle = {
+    maxWidth: "300px",
+    margin: "auto",
+  };
+
+  const contentStyle = {
+    fontSize: "0.7rem",
+  };
+
+  const titleStyle = {
+    fontSize: "0.9rem",
+  };
+
+  const listItemTextStyle = {
+    fontSize: "0.7rem",
+  };
+
   return (
     <div>
       <Dialog
@@ -19,11 +36,14 @@ export default function Info({ open, handleClose, config }) {
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        PaperProps={{ style: dialogStyle }}
       >
-        <DialogTitle id="alert-dialog-title">Info</DialogTitle>
-        <DialogContent>
+        <DialogTitle id="alert-dialog-title" style={titleStyle}>
+          Info
+        </DialogTitle>
+        <DialogContent style={contentStyle}>
           <DialogContentText id="alert-dialog-description">
-            <Typography variant="h6" component="h3">
+            <Typography variant="h6" component="h3" style={titleStyle}>
               This tool made possible by:
             </Typography>
             <List>
@@ -42,6 +62,8 @@ export default function Info({ open, handleClose, config }) {
                 <ListItemText
                   primary="Ayaka"
                   secondary="for the original idea"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
                 />
               </ListItem>
               <ListItem
@@ -59,6 +81,8 @@ export default function Info({ open, handleClose, config }) {
                 <ListItemText
                   primary="Modder4869"
                   secondary="for the help with the code"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
                 />
               </ListItem>
               <ListItem
@@ -77,13 +101,35 @@ export default function Info({ open, handleClose, config }) {
                 <ListItemText
                   primary="u/SherenPlaysGames"
                   secondary="for the original stamps"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
+                />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() =>
+                  (window.location.href = 
+                    "https://github.com/The-Parth")
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar
+                    alt="Parth"
+                    src="https://avatars.githubusercontent.com/The-Parth"
+                  />
+                </ListItemAvatar>
+                <ListItemText
+                  primary="Parth B"
+                  secondary="I made this modification"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
                 />
               </ListItem>
               <ListItem
                 button
                 onClick={() =>
                   (window.location.href =
-                    "https://github.com/TheOriginalAyaka/sekai-stickers/graphs/contributors")
+                    "https://github.com/The-Parth/sekai-stickers/graphs/contributors")
                 }
               >
                 <ListItemAvatar>
@@ -95,18 +141,20 @@ export default function Info({ open, handleClose, config }) {
                 <ListItemText
                   primary="Contributors"
                   secondary="for the help with the code"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
                 />
               </ListItem>
             </List>
-            <Typography variant="h6" component="h3">
-              You can find the source code or contribute here:
+            <Typography variant="h6" component="h3" style={titleStyle}>
+              Source Code
             </Typography>
             <List>
               <ListItem
                 button
                 onClick={() =>
                   (window.location.href =
-                    "https://github.com/TheOriginalAyaka/sekai-stickers")
+                    "https://github.com/The-Parth/sekai-stickers")
                 }
               >
                 <ListItemAvatar>
@@ -115,39 +163,14 @@ export default function Info({ open, handleClose, config }) {
                     src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   />
                 </ListItemAvatar>
-                <ListItemText primary="GitHub" secondary="Source Code" />
-              </ListItem>
-            </List>
-            <Typography variant="h6" component="h3">
-              The discord bot:
-            </Typography>
-            <List>
-              <ListItem
-                button
-                onClick={() =>
-                  (window.location.href =
-                    "http://link.ayaka.one/stbot")
-                }
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    alt="Discord"
-                    src="https://cdn.discordapp.com/embed/avatars/0.png"
-                  />
-                </ListItemAvatar>
                 <ListItemText
-                  primary="Sekai Stickers"
-                  secondary="Add more fun to your server."
+                  primary="GitHub"
+                  secondary="Source Code"
+                  primaryTypographyProps={{ style: listItemTextStyle }}
+                  secondaryTypographyProps={{ style: listItemTextStyle }}
                 />
               </ListItem>
             </List>
-            <Typography variant="h6" component="h3">
-              Total stickers made using the app:
-              <br />
-              {config?.global
-                ? config?.global.toLocaleString() + " Sticker"
-                : "not available"}
-            </Typography>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
