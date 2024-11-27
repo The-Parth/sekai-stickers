@@ -5024,6 +5024,20 @@
             "r": -2,
             "s": 47
         }
+    },
+    {
+        "id":"375",
+        "name": "Chill Guy 01",
+        "character": "Chill Guy",
+        "img": "misc/chillguy.png",
+        "color": "#90463b",
+        "defaultText": {
+            "text": "I'm a chill guy",
+            "x": 148,
+            "y": 58,
+            "r": -2,
+            "s": 47
+        }
     }
   
 ]
