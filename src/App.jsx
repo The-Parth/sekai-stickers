@@ -10,13 +10,25 @@ import Picker from "./components/Picker";
 import Info from "./components/Info";
 import getConfiguration from "./utils/config";
 import log from "./utils/log";
+import Importer from "./components/ImportData";
 import { bannerViewed, setBannerViewed } from "./utils/banner";
+import { useLocation, useSearchParams } from "react-router-dom";
+
 
 const { ClipboardItem } = window;
 
 function App() {
   const [config, setConfig] = useState(null);
   const [bannerView, setBannerView] = useState(bannerViewed());
+
+  const [run, setRun] = useState(false);
+
+  // after 3 seconds, set run to true
+  useEffect(() => {
+    setTimeout(() => {
+      setRun(true);
+    }, 3000);
+  }, []);
 
   // using this to trigger the useEffect because lazy to think of a better way
   const [rand, setRand] = useState(0);
@@ -46,17 +58,62 @@ function App() {
   const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
   const [position, setPosition] = useState({
-    x: characters[character].defaultText.x + 150,
-    y: characters[character].defaultText.y + 150,
+    x: characters[character].defaultText.x + 50,
+    y: characters[character].defaultText.y + 60,
   });
   const [fontSize, setFontSize] = useState(characters[character].defaultText.s);
   const [spaceSize, setSpaceSize] = useState(1);
   const [rotate, setRotate] = useState(characters[character].defaultText.r);
   const [curve, setCurve] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [importerOpen, setImporterOpen] = useState(false);
   const img = new Image();
 
+  // Get Parameters from URL
+  const location = window.location;
   useEffect(() => {
+    console.log(location);
+    const params = new URLSearchParams(location.search);
+    // wait 2 seconds before proceeding with loading the data
+    setTimeout(() => {
+      if (params.get("character")) {
+        setCharacter(parseInt(params.get("character")));
+      }
+      if (params.get("text")) {
+        setText(decodeURIComponent(params.get("text")));
+      } 
+      if (params.get("scale")) {
+        setScale(parseInt(params.get("scale")));
+      } 
+      const newPosition = { ...position };
+      if (params.get("positionX")) {
+        newPosition.x = parseInt(params.get("positionX"));
+      } 
+      if (params.get("positionY")) {
+        newPosition.y = parseInt(params.get("positionY"));
+      }
+      if (params.get("positionX") || params.get("positionY")) {
+        setPosition(newPosition);
+      }
+      if (params.get("fontSize")) {
+        setFontSize(parseInt(params.get("fontSize")));
+      }
+      if (params.get("spaceSize")) {
+        setSpaceSize(parseInt(params.get("spaceSize")));
+      }
+      if (params.get("rotate")) {
+        setRotate(parseFloat(params.get("rotate")));
+      }
+      if (params.get("curve") === "true") {
+        setCurve(true);
+      }
+      setLoaded(false);
+    }, 20);
+    
+  }, [location]);
+
+  useEffect(() => {
+    if (!run) return;
     setText(characters[character].defaultText.text);
     setPosition({
       x: characters[character].defaultText.x + 50,
@@ -132,7 +189,10 @@ function App() {
   const download = async () => {
     const canvas = document.getElementsByTagName("canvas")[0];
     const link = document.createElement("a");
-    link.download = `${characters[character].name}_st.ayaka.one.png`;
+    link.download = `${characters[character].name.replace(
+      " ",
+      "_"
+    )}_sticker.png`;
     link.href = canvas.toDataURL();
     link.click();
     await log(characters[character].id, characters[character].name, "download");
@@ -167,11 +227,35 @@ function App() {
     setRand(rand + 1);
   };
 
+  const exportVals = () => {
+    const data = {
+      character,
+      scale,
+      text,
+      position,
+      fontSize,
+      spaceSize,
+      rotate,
+      curve,
+    };
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${characters[character].name.replace(" ", "_")}_data.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="App">
       <Info open={infoOpen} handleClose={handleClose} config={config} />
       <div className="header">
-        <h1>Project Sekai Sticker Maker</h1>
+        <h1 onClick={() => (window.location.href = "/")}>
+          Project Sekai Sticker Maker
+        </h1>
       </div>
       <div className="container">
         <div className="vertical">
@@ -296,17 +380,31 @@ function App() {
                 Download
               </Button>
             </div>
+            <div classname="horizontal">
+              <Button color="secondary" onClick={exportVals}>
+                Export as JSON
+              </Button>
+            </div>
           </div>
-        </div>
-        
-      </div>
-      <div className="footer">
-          <p>©SEGA / Project Sekai</p>
-          <p>This website is not affiliated with or endorsed by SEGA, Colourful Palette, or Crypton Future Media.</p>
-          <Button color="secondary" onClick={handleClickOpen}>
-            Info
+          <Button
+            color="primary"
+            onClick={() => setImporterOpen(!importerOpen)}
+          >
+            {importerOpen ? "Close" : "Import JSON"}
           </Button>
         </div>
+      </div>
+      {importerOpen && <Importer />}
+      <div className="footer">
+        <p>©SEGA / Project Sekai</p>
+        <p>
+          This website is not affiliated with or endorsed by SEGA, Colourful
+          Palette, or Crypton Future Media.
+        </p>
+        <Button color="secondary" onClick={handleClickOpen}>
+          Info
+        </Button>
+      </div>
     </div>
   );
 }
