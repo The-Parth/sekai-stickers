@@ -11,7 +11,7 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
-export default function Info({ open, handleClose, config }) {
+export default function Info({ open, handleClose}) {
   const dialogStyle = {
     maxWidth: "300px",
     margin: "auto",

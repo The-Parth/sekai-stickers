@@ -8,19 +8,12 @@ import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
-import getConfiguration from "./utils/config";
-import log from "./utils/log";
 import Importer from "./components/ImportData";
-import { bannerViewed, setBannerViewed } from "./utils/banner";
-import { useLocation, useSearchParams } from "react-router-dom";
 
 
 const { ClipboardItem } = window;
 
 function App() {
-  const [config, setConfig] = useState(null);
-  const [bannerView, setBannerView] = useState(bannerViewed());
-
   const [run, setRun] = useState(false);
 
   // after 3 seconds, set run to true
@@ -29,20 +22,6 @@ function App() {
       setRun(true);
     }, 3000);
   }, []);
-
-  // using this to trigger the useEffect because lazy to think of a better way
-  const [rand, setRand] = useState(0);
-  useEffect(() => {
-    try {
-      const data = async () => {
-        const res = await getConfiguration();
-        setConfig(res);
-      };
-      data();
-    } catch (error) {
-      console.log(error);
-    }
-  }, [rand]);
 
   const [infoOpen, setInfoOpen] = useState(false);
 
@@ -195,8 +174,7 @@ function App() {
     )}_sticker.png`;
     link.href = canvas.toDataURL();
     link.click();
-    await log(characters[character].id, characters[character].name, "download");
-    setRand(rand + 1);
+
   };
 
   function b64toBlob(b64Data, contentType = null, sliceSize = null) {
@@ -223,8 +201,6 @@ function App() {
         "image/png": b64toBlob(canvas.toDataURL().split(",")[1]),
       }),
     ]);
-    await log(characters[character].id, characters[character].name, "copy");
-    setRand(rand + 1);
   };
 
   const exportVals = () => {
@@ -251,7 +227,7 @@ function App() {
 
   return (
     <div className="App">
-      <Info open={infoOpen} handleClose={handleClose} config={config} />
+      <Info open={infoOpen} handleClose={handleClose} />
       <div className="header">
         <h1 onClick={() => (window.location.href = "/")}>
           Project Sekai Sticker Maker
