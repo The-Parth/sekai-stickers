@@ -234,7 +234,7 @@ function App() {
         </h1>
       </div>
       <div className="container">
-        <div className="vertical">
+        <div className="vertical" id = "canvas-container">
           <div className="horizontal">
             <div className="canvas">
               <Canvas draw={draw} />

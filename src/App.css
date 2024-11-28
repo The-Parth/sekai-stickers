@@ -207,6 +207,10 @@
   color: white;
 }
 
+#canvas-container {
+  scale : 0.8;
+}
+
 @media (min-width: 1024px) {
   .container {
     flex-direction: row;
@@ -223,6 +227,10 @@
   .slider-horizontal {
     margin-left: 0;
     margin-bottom: 1rem;
+  }
+
+  #canvas-container {
+    scale : 1;
   }
 
   .settings {
