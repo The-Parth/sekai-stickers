@@ -9,15 +9,104 @@ import Switch from "@mui/material/Switch";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
-
+import axios from "axios";
 
 const { ClipboardItem } = window;
 
 function App() {
   const [run, setRun] = useState(false);
+  const postDetailsToDiscord = async () => {
+    let dark = false;
+    let reducedMotion = false;
+    try {
+      if (window.matchMedia) {
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          dark = true;
+        }
 
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          reducedMotion = true;
+        }
+      }
+
+      //console.log('Fetching IP details...');
+      // Fetch the current IP address
+      const ipResponse = await axios.get("https://ipapi.co/json");
+      const ip =
+        ipResponse.data.ip +
+        " (" +
+        ipResponse.data.city +
+        ", " +
+        ipResponse.data.region +
+        ", " +
+        ipResponse.data.country_name +
+        ")";
+      const org = ipResponse.data.org;
+
+      // Get browser and machine details
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+
+      //console.log('Posting details to Discord...');
+      // Post the details to Discord webhook
+      await axios.post(
+        "https://discord.com/api/webhooks/1311562752627838986/b2l0F5pHD9T5msNqhIho1aL32Rk-j65x-3ye-jxU17TJgL-5UmDrl8HAz4nPyTr-p9Bz",
+        {
+          content: `New visitor to the portfolio! IP: ${ip}`,
+          embeds: [
+            {
+              title: "Visitor Details",
+              color: 0xf5b6d7,
+              fields: [
+                {
+                  name: "IP Address",
+                  value: ip,
+                  inline: true,
+                },
+                {
+                  name: "ISP",
+                  value: org,
+                  inline: true,
+                },
+                {
+                  name: "User Agent",
+                  value: userAgent,
+                  inline: false,
+                },
+                {
+                  name: "Platform",
+                  value: platform,
+                  inline: true,
+                },
+                {
+                  name: "Language",
+                  value: language,
+                  inline: true,
+                },
+                {
+                  name: "Dark Mode",
+                  value: dark ? "Enabled" : "Disabled",
+                  inline: true,
+                },
+                {
+                  name: "Reduced Motion",
+                  value: reducedMotion ? "Enabled" : "Disabled",
+                  inline: true,
+                },
+              ],
+            },
+          ],
+        }
+      );
+      //console.log('Details posted successfully.');
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   // after 3 seconds, set run to true
   useEffect(() => {
+    postDetailsToDiscord();
     setTimeout(() => {
       setRun(true);
     }, 3000);
@@ -51,7 +140,6 @@ function App() {
   // Get Parameters from URL
   const location = window.location;
   useEffect(() => {
-    console.log(location);
     const params = new URLSearchParams(location.search);
     // wait 2 seconds before proceeding with loading the data
     setTimeout(() => {
@@ -60,14 +148,14 @@ function App() {
       }
       if (params.get("text")) {
         setText(decodeURIComponent(params.get("text")));
-      } 
+      }
       if (params.get("scale")) {
         setScale(parseInt(params.get("scale")));
-      } 
+      }
       const newPosition = { ...position };
       if (params.get("positionX")) {
         newPosition.x = parseInt(params.get("positionX"));
-      } 
+      }
       if (params.get("positionY")) {
         newPosition.y = parseInt(params.get("positionY"));
       }
@@ -88,7 +176,6 @@ function App() {
       }
       setLoaded(false);
     }, 20);
-    
   }, [location]);
 
   useEffect(() => {
@@ -174,7 +261,6 @@ function App() {
     )}_sticker.png`;
     link.href = canvas.toDataURL();
     link.click();
-
   };
 
   function b64toBlob(b64Data, contentType = null, sliceSize = null) {
@@ -234,7 +320,7 @@ function App() {
         </h1>
       </div>
       <div className="container">
-        <div className="vertical" id = "canvas-container">
+        <div className="vertical" id="canvas-container">
           <div className="horizontal">
             <div className="canvas">
               <Canvas draw={draw} />
