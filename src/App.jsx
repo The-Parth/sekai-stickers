@@ -9,104 +9,14 @@ import Switch from "@mui/material/Switch";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
-import axios from "axios";
+
 
 const { ClipboardItem } = window;
 
 function App() {
   const [run, setRun] = useState(false);
-  const postDetailsToDiscord = async () => {
-    let dark = false;
-    let reducedMotion = false;
-    try {
-      if (window.matchMedia) {
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          dark = true;
-        }
-
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          reducedMotion = true;
-        }
-      }
-
-      //console.log('Fetching IP details...');
-      // Fetch the current IP address
-      const ipResponse = await axios.get("https://ipapi.co/json");
-      const ip =
-        ipResponse.data.ip +
-        " (" +
-        ipResponse.data.city +
-        ", " +
-        ipResponse.data.region +
-        ", " +
-        ipResponse.data.country_name +
-        ")";
-      const org = ipResponse.data.org;
-
-      // Get browser and machine details
-      const userAgent = navigator.userAgent;
-      const platform = navigator.platform;
-      const language = navigator.language;
-
-      //console.log('Posting details to Discord...');
-      // Post the details to Discord webhook
-      await axios.post(
-        "https://discord.com/api/webhooks/1311562752627838986/b2l0F5pHD9T5msNqhIho1aL32Rk-j65x-3ye-jxU17TJgL-5UmDrl8HAz4nPyTr-p9Bz",
-        {
-          content: `New visitor to the portfolio! IP: ${ip}`,
-          embeds: [
-            {
-              title: "Visitor Details",
-              color: 0xf5b6d7,
-              fields: [
-                {
-                  name: "IP Address",
-                  value: ip,
-                  inline: true,
-                },
-                {
-                  name: "ISP",
-                  value: org,
-                  inline: true,
-                },
-                {
-                  name: "User Agent",
-                  value: userAgent,
-                  inline: false,
-                },
-                {
-                  name: "Platform",
-                  value: platform,
-                  inline: true,
-                },
-                {
-                  name: "Language",
-                  value: language,
-                  inline: true,
-                },
-                {
-                  name: "Dark Mode",
-                  value: dark ? "Enabled" : "Disabled",
-                  inline: true,
-                },
-                {
-                  name: "Reduced Motion",
-                  value: reducedMotion ? "Enabled" : "Disabled",
-                  inline: true,
-                },
-              ],
-            },
-          ],
-        }
-      );
-      //console.log('Details posted successfully.');
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
   // after 3 seconds, set run to true
   useEffect(() => {
-    postDetailsToDiscord();
     setTimeout(() => {
       setRun(true);
     }, 3000);
@@ -130,12 +40,22 @@ function App() {
     y: characters[character].defaultText.y + 60,
   });
   const [fontSize, setFontSize] = useState(characters[character].defaultText.s);
-  const [spaceSize, setSpaceSize] = useState(1);
+  const [spaceSize, setSpaceSize] = useState(18);
   const [rotate, setRotate] = useState(characters[character].defaultText.r);
   const [curve, setCurve] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [textColor, setTextColor] = useState(characters[character].color);
   const img = new Image();
+
+  //reset uploaded image's url and text colour when a new character is selected
+  useEffect(() => {
+    setImageUrl(null);
+    setTextColor(characters[character].color);
+    setLoaded(false);
+    
+  }, [character]);
 
   // Get Parameters from URL
   const location = window.location;
@@ -174,7 +94,14 @@ function App() {
       if (params.get("curve") === "true") {
         setCurve(true);
       }
-      setLoaded(false);
+      if (params.get("textColor")) {
+        setTextColor(params.get("textColor"));
+      }
+      if(params.get("imageUrl")){
+        setImageUrl(decodeURIComponent(params.get("imageUrl")));
+      }
+      window.history.replaceState({}, document.title, location.pathname);
+
     }, 20);
   }, [location]);
 
@@ -189,11 +116,11 @@ function App() {
     setFontSize(characters[character].defaultText.s);
     setLoaded(false);
   }, [character]);
-
-  img.src = "/img/" + characters[character].img;
-
+  
+  img.src = imageUrl?imageUrl:"/img/" + characters[character].img;
   img.onload = () => {
     setLoaded(true);
+
   };
 
   let angle = (Math.PI * text.length) / 7;
@@ -228,7 +155,7 @@ function App() {
       ctx.rotate(rotate / 10);
       ctx.textAlign = "center";
       ctx.strokeStyle = "white";
-      ctx.fillStyle = characters[character].color;
+      ctx.fillStyle = textColor;
       var lines = text.split("\n");
       if (curve) {
         for (let line of lines) {
@@ -263,6 +190,18 @@ function App() {
     link.click();
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result); 
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   function b64toBlob(b64Data, contentType = null, sliceSize = null) {
     contentType = contentType || "image/png";
     sliceSize = sliceSize || 512;
@@ -284,11 +223,14 @@ function App() {
     const canvas = document.getElementsByTagName("canvas")[0];
     await navigator.clipboard.write([
       new ClipboardItem({
-        "image/png": b64toBlob(canvas.toDataURL().split(",")[1]),
+      "image/png": b64toBlob((canvas.toDataURL().split(",")[1])),
       }),
     ]);
   };
 
+
+  
+  
   const exportVals = () => {
     const data = {
       character,
@@ -299,6 +241,7 @@ function App() {
       spaceSize,
       rotate,
       curve,
+      textColor,
     };
 
     const json = JSON.stringify(data, null, 2);
@@ -418,6 +361,15 @@ function App() {
                 color="secondary"
               />
             </div>
+            <div>
+            <label>Text Color:</label>
+            <input
+              type="color"
+              value={textColor}
+              onChange={(e) => setTextColor(e.target.value)}
+              style= {{marginLeft: '25px'}}
+            />
+          </div>
           </div>
           <div className="text">
             <TextField
@@ -428,13 +380,21 @@ function App() {
               multiline={true}
               fullWidth
               onChange={(e) => setText(e.target.value)}
+              style={{marginTop: '15px'}}
             />
           </div>
           <div className="horizontal">
             <div className="picker">
               <Picker setCharacter={setCharacter} />
+             </div>
+            
+            <div className="horizontal">
+              <Button variant="contained" color="secondary" component="label" style={{marginTop:'15px'}}>
+                Upload Image
+                <input type="file" accept="image/*" onChange={handleImageUpload} hidden/>
+              </Button>
             </div>
-            <div className="buttons">
+             <div className="buttons">
               <Button color="secondary" onClick={copy}>
                 Copy
               </Button>
@@ -467,6 +427,10 @@ function App() {
           Info
         </Button>
       </div>
+
+ 
+
+      
     </div>
   );
 }
