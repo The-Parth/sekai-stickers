@@ -135,6 +135,8 @@ function App() {
   const [curve, setCurve] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
+  const [textColor, setTextColor] = useState(characters[character].color);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const img = new Image();
 
   // Get Parameters from URL
@@ -178,6 +180,7 @@ function App() {
     }, 20);
   }, [location]);
 
+  const [imageUrl, setImageUrl] = useState(null);
   useEffect(() => {
     if (!run) return;
     setText(characters[character].defaultText.text);
@@ -187,16 +190,36 @@ function App() {
     });
     setRotate(characters[character].defaultText.r);
     setFontSize(characters[character].defaultText.s);
+    setTextColor(characters[character].color);
+    setImagePosition({ x: 0, y: 0 });
+    setImageUrl(null);
     setLoaded(false);
   }, [character]);
 
-  img.src = "/img/" + characters[character].img;
+  img.src = imageUrl ? imageUrl : "/img/" + characters[character].img;
 
   img.onload = () => {
     setLoaded(true);
   };
 
   let angle = (Math.PI * text.length) / 7;
+
+  const handleUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result);
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    // Reset the input value to allow reuploading the same image
+    event.target.value = null;
+
+    // reset all image positions
+    setImagePosition({ x: 0, y: 0 });
+  };
 
   const draw = (ctx) => {
     ctx.canvas.width = 400;
@@ -215,8 +238,8 @@ function App() {
         0,
         img.width,
         img.height,
-        centerShift_x,
-        centerShift_y,
+        centerShift_x + imagePosition.x,
+        centerShift_y - imagePosition.y,
         img.width * ratio,
         img.height * ratio
       );
@@ -228,7 +251,7 @@ function App() {
       ctx.rotate(rotate / 10);
       ctx.textAlign = "center";
       ctx.strokeStyle = "white";
-      ctx.fillStyle = characters[character].color;
+      ctx.fillStyle = textColor;
       var lines = text.split("\n");
       if (curve) {
         for (let line of lines) {
@@ -250,6 +273,29 @@ function App() {
         ctx.restore();
       }
     }
+  };
+
+  const importDataCallback = (data) => {
+    if (data.imageUrl) {
+      setImageUrl(data.imageUrl);
+      img.src = data.imageUrl;
+    } else {
+      setImageUrl(null);
+      setCharacter(data.character);
+      img.src = "/img/" + characters[data.character].img
+    }
+    setTimeout(() => {
+    setScale(data.scale);
+    setText(data.text);
+    setPosition(data.position);
+    setFontSize(data.fontSize);
+    setSpaceSize(data.spaceSize);
+    setRotate(data.rotate);
+    setCurve(data.curve);
+    setTextColor(data.textColor);
+    console.log(data.textColor)
+    setImagePosition(data.imagePosition);
+    }, 100);
   };
 
   const download = async () => {
@@ -299,20 +345,41 @@ function App() {
       spaceSize,
       rotate,
       curve,
+      textColor,
+      imagePosition,
     };
+
+    if (imageUrl) {
+        data.imageUrl = imageUrl;
+        data.custom = true;
+    }
 
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${characters[character].name.replace(" ", "_")}_data.json`;
-    link.click();
+
+    var defName = "";
+    if (imageUrl) {
+       defName = "custom_image_data";
+    } else {
+        defName = `${characters[character].name.replace(" ", "_")}_data`;
+    }
+
+    const fileName = window.prompt("Enter the file name", `${defName}`);
+
+    if (fileName) {
+      link.download = fileName + ".json";
+      link.click();
+    }
+
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{ fontFamily: "YurukaStd" }}>
       <Info open={infoOpen} handleClose={handleClose} />
       <div className="header">
         <h1 onClick={() => (window.location.href = "/")}>
@@ -334,6 +401,21 @@ function App() {
                 track={false}
                 color="secondary"
               />
+              <div style={{ fontFamily: "YurukaStd", marginTop: "-10px" }}>
+                <label>X: </label>
+                <Slider
+                  className="slider"
+                  value={imagePosition.x}
+                  onChange={(e, v) =>
+                    setImagePosition({ ...imagePosition, x: v })
+                  }
+                  min={-200}
+                  max={200}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                />
+              </div>
             </div>
           </div>
           <Slider
@@ -351,7 +433,21 @@ function App() {
             track={false}
             color="secondary"
           />
+
+          <label>Y: </label>
+          <Slider
+            className="slider"
+            value={imagePosition.y}
+            onChange={(e, v) => setImagePosition({ ...imagePosition, y: v })}
+            min={-200}
+            max={200}
+            step={1}
+            track={false}
+            orientation="vertical"
+            color="secondary"
+          />
         </div>
+
         <div className="horizontal">
           <div className="settings">
             <div>
@@ -418,6 +514,16 @@ function App() {
                 color="secondary"
               />
             </div>
+
+            <div style={{ paddingBottom: "15px" }}>
+              <label>Text Color:</label>
+              <input
+                type="color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                style={{ marginLeft: "25px" }}
+              />
+            </div>
           </div>
           <div className="text">
             <TextField
@@ -432,6 +538,22 @@ function App() {
           </div>
           <div className="horizontal">
             <div className="picker">
+              <Button
+                variant="contained"
+                color="secondary"
+                component="label"
+                style={{ marginTop: "15px" }}
+              >
+                Upload Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUpload}
+                  hidden
+                />
+              </Button>
+            </div>
+            <div className="picker" style={{ marginTop: "15px" }}>
               <Picker setCharacter={setCharacter} />
             </div>
             <div className="buttons">
@@ -456,7 +578,7 @@ function App() {
           </Button>
         </div>
       </div>
-      {importerOpen && <Importer />}
+      {importerOpen && <Importer callback={importDataCallback} />}
       <div className="footer">
         <p>©SEGA / Project Sekai</p>
         <p>
