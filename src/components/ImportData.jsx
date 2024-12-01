@@ -14,6 +14,7 @@ const Importer2 = () => {
         var rotate = 0;
         var text ="";
         var curve = false;
+        var textColor = "#000000";
         // read data to variable
         if (jsonData.text) {
             console.log("Text: ", jsonData.text);
@@ -51,8 +52,14 @@ const Importer2 = () => {
             console.log("Curve: ", jsonData.curve);
             curve = jsonData.curve;
         }
+        if (jsonData.textColor) { 
+            console.log("Text Color: ", jsonData.textColor);
+            textColor = jsonData.textColor
+        }
+      
         // redirect to the main page
-        var str = "/?scale=" + scale + "&character=" + character + "&fontSize=" + fontSize + "&positionX=" + positionX + "&positionY=" + positionY + "&spaceSize=" + spaceSize + "&rotate=" + rotate + "&curve=" + curve + "&text=" + text;
+        var str =
+        "/?scale=" + scale + "&character=" + character + "&fontSize=" + fontSize + "&positionX=" + positionX + "&positionY=" + positionY + "&spaceSize=" + spaceSize + "&rotate=" + rotate + "&curve=" + curve + "&text=" + text+"&textColor=" + encodeURIComponent(textColor);
         window.location.href = str;
     }
   }, [jsonData]);

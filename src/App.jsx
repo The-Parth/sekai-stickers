@@ -9,7 +9,7 @@ import Switch from "@mui/material/Switch";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
-import axios from "axios";
+
 
 const { ClipboardItem } = window;
 
@@ -32,6 +32,16 @@ function App() {
     setInfoOpen(false);
   };
 
+  const resetTextposition = () => {
+    setPosition({
+      x: characters[character].defaultText.x + 50,
+      y: characters[character].defaultText.y + 60,
+    });
+  };
+  const resetImageposition = () => {
+    setImagePosition({ x: 0, y: 0 });
+  };
+
   const [character, setCharacter] = useState(49);
   const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
@@ -40,14 +50,25 @@ function App() {
     y: characters[character].defaultText.y + 60,
   });
   const [fontSize, setFontSize] = useState(characters[character].defaultText.s);
-  const [spaceSize, setSpaceSize] = useState(1);
+  const [spaceSize, setSpaceSize] = useState(18);
   const [rotate, setRotate] = useState(characters[character].defaultText.r);
   const [curve, setCurve] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
   const [textColor, setTextColor] = useState(characters[character].color);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isImageDragging, setIsImageDragging] = useState(false);
   const img = new Image();
+
+  //reset uploaded image's url and text colour when a new character is selected
+  useEffect(() => {
+    setImageUrl(null);
+    setTextColor(characters[character].color);
+    setLoaded(false);
+    
+  }, [character]);
 
   // Get Parameters from URL
   const location = window.location;
@@ -86,7 +107,14 @@ function App() {
       if (params.get("curve") === "true") {
         setCurve(true);
       }
-      setLoaded(false);
+      if (params.get("textColor")) {
+        setTextColor(params.get("textColor"));
+      }
+      if(params.get("imageUrl")){
+        setImageUrl(decodeURIComponent(params.get("imageUrl")));
+      }
+      window.history.replaceState({}, document.title, location.pathname);
+
     }, 20);
   }, [location]);
 
@@ -110,6 +138,7 @@ function App() {
 
   img.onload = () => {
     setLoaded(true);
+
   };
 
   let angle = (Math.PI * text.length) / 7;
@@ -131,6 +160,73 @@ function App() {
     setImagePosition({ x: 0, y: 0 });
   };
 
+  const handleMouseDown = (e) => {
+    const canvas = e.target.getBoundingClientRect();
+    const x = e.clientX - canvas.left;
+    const y = e.clientY - canvas.top;
+  
+    // Check if click is near the text
+    if (
+      text.length > 0 &&
+      x > position.x - 120 &&
+      x < position.x + 120 &&
+      y > position.y - 50 &&
+      y < position.y + 50
+    ) {
+      setIsDragging(true);
+      setDragStart({ x, y });
+      return;
+    }
+  
+    const imgWidth = img.width * (scale / 100);
+    const imgHeight = img.height * (scale / 100);
+    const imgStartX = (canvas.width - imgWidth) / 2 + imagePosition.x;
+    const imgStartY = (canvas.height - imgHeight) / 2 + imagePosition.y;
+  
+    if (
+      x > imgStartX &&
+      x < imgStartX + imgWidth &&
+      y > imgStartY &&
+      y < imgStartY + imgHeight
+    ) {
+      setIsImageDragging(true);
+      setDragStart({ x, y });
+      return;
+    }
+  };
+  
+  const handleMouseMove = (e) => {
+    if (!isDragging && !isImageDragging) return;
+
+    const canvas = e.target.getBoundingClientRect();
+    const x = e.clientX - canvas.left;
+    const y = e.clientY - canvas.top;
+    const deltaX = x - dragStart.x;
+    const deltaY = y - dragStart.y;
+  
+    if (isDragging) {
+      setPosition((prevPosition) => ({
+        x: prevPosition.x + deltaX,
+        y: prevPosition.y + deltaY,
+      }));
+    }
+  
+    if (isImageDragging) {
+      setImagePosition((prevPosition) => ({
+        x: prevPosition.x + deltaX,
+        y: prevPosition.y - deltaY,
+      }));
+    }
+  
+    setDragStart({ x, y });
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsImageDragging(false);
+  };
+  
+  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -219,6 +315,18 @@ function App() {
     link.click();
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result); 
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   function b64toBlob(b64Data, contentType = null, sliceSize = null) {
     contentType = contentType || "image/png";
     sliceSize = sliceSize || 512;
@@ -240,11 +348,14 @@ function App() {
     const canvas = document.getElementsByTagName("canvas")[0];
     await navigator.clipboard.write([
       new ClipboardItem({
-        "image/png": b64toBlob(canvas.toDataURL().split(",")[1]),
+      "image/png": b64toBlob((canvas.toDataURL().split(",")[1])),
       }),
     ]);
   };
 
+
+  
+  
   const exportVals = () => {
     const data = {
       character,
@@ -300,7 +411,11 @@ function App() {
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
             <div className="canvas">
-              <Canvas draw={draw} />
+              <Canvas draw={draw} 
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}  
+                />
               <Slider
                 className="slider-horizontal"
                 value={position.x}
@@ -425,13 +540,13 @@ function App() {
               />
             </div>
 
-            <div style={{ paddingBottom: "15px" }}>
+            <div style={{ paddingBottom: "10px" }}>
               <label>Text Color:</label>
               <input
                 type="color"
                 value={textColor}
                 onChange={(e) => setTextColor(e.target.value)}
-                style={{ marginLeft: "25px" }}
+                style={{ marginLeft: "20px" }}
               />
             </div>
           </div>
@@ -444,6 +559,7 @@ function App() {
               multiline={true}
               fullWidth
               onChange={(e) => setText(e.target.value)}
+              style={{marginTop: '5px'}}
             />
           </div>
           <div className="horizontal">
@@ -452,7 +568,7 @@ function App() {
                 variant="contained"
                 color="secondary"
                 component="label"
-                style={{ marginTop: "15px" }}
+                style={{ marginTop: "0px" }}
               >
                 Upload Image
                 <input
@@ -463,10 +579,26 @@ function App() {
                 />
               </Button>
             </div>
-            <div className="picker" style={{ marginTop: "15px" }}>
-              <Picker setCharacter={setCharacter} />
+            <div className="horizontal">
+              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetTextposition}  >
+                Reset Text Position
+              </Button>
+              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetImageposition}>
+                Reset Image Position
+              </Button>
             </div>
-            <div className="buttons">
+
+            <div className="picker" style={{ marginTop: "7px" }}>
+              <Picker setCharacter={setCharacter} />
+             </div>
+            
+            <div className="horizontal">
+              <Button variant="contained" color="secondary" component="label" style={{marginTop:'7px'}}>
+                Upload Image
+                <input type="file" accept="image/*" onChange={handleImageUpload} hidden/>
+              </Button>
+            </div>
+             <div className="buttons">
               <Button color="secondary" onClick={copy}>
                 Copy
               </Button>
@@ -499,6 +631,10 @@ function App() {
           Info
         </Button>
       </div>
+
+ 
+
+      
     </div>
   );
 }
