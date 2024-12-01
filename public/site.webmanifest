@@ -22,7 +22,7 @@
     "background_color": "#121212",
     "display": "standalone",
     "description": "Make your own Project sekai stickers!",
-    "start_url": "https://st.ayaka.one/",
+    "start_url": "https://pjsk-stickers.vercel.app/",
     "dir": "ltr",
     "lang": "en",
     "orientation": "portrait",
