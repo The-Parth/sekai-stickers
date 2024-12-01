@@ -225,6 +225,25 @@ function App() {
     setIsDragging(false);
     setIsImageDragging(false);
   };
+
+  const handleTouchStart = (e) => {
+    // Prevent the default touch action
+    e.preventDefault();
+  const touch = e.touches[0];
+  handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+};
+
+const handleTouchMove = (e) => {
+  // Prevent the default touch action
+  e.preventDefault();
+  const touch = e.touches[0];
+  handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
+};
+
+const handleTouchEnd = () => {
+  handleMouseUp();
+
+};
   
   
   const draw = (ctx) => {
@@ -415,6 +434,11 @@ function App() {
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}  
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{ cursor: isDragging || isImageDragging ? "grabbing" : "grab" , touchAction: "none"}}
                 />
               <Slider
                 className="slider-horizontal"
