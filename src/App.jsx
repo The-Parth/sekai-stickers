@@ -47,6 +47,8 @@ function App() {
   const [importerOpen, setImporterOpen] = useState(false);
   const [textColor, setTextColor] = useState(characters[character].color);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const img = new Image();
 
   //reset uploaded image's url and text colour when a new character is selected
@@ -145,6 +147,48 @@ function App() {
 
     // reset all image positions
     setImagePosition({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e) => {
+    const canvas = e.target.getBoundingClientRect();
+    const x = e.clientX - canvas.left;
+    const y = e.clientY - canvas.top;
+  
+    //check if the click is near the text
+    if (
+    
+      x<0 || x>400 || y<0 || y>390 || x < position.x - 120 || x > position.x + 120 || y < position.y - 50 || y > position.y + 50
+      ||text.length==0
+    ) {
+      return;
+    }
+    setIsDragging(true);
+    setDragStart({ x, y });
+  };
+  
+  const handleMouseMove = (e) => {
+
+    if (!isDragging) return;
+  
+    const canvas = e.target.getBoundingClientRect();
+    const x = e.clientX - canvas.left;
+    const y = e.clientY - canvas.top;
+  
+    const deltaX = x - dragStart.x;
+    const deltaY = y - dragStart.y;
+
+  
+    setPosition((prevPosition) => ({
+      x: prevPosition.x + deltaX,
+      y: prevPosition.y + deltaY,
+    }));
+  
+    setDragStart({ x, y });
+    console.log("Dragged Position:", { x: position.x, y: position.y });
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const draw = (ctx) => {
@@ -331,7 +375,11 @@ function App() {
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
             <div className="canvas">
-              <Canvas draw={draw} />
+              <Canvas draw={draw} 
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}  
+                />
               <Slider
                 className="slider-horizontal"
                 value={position.x}
