@@ -6,10 +6,11 @@ import Slider from "@mui/material/Slider";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
+import { Grid } from "@mui/material";
+import { styled } from "@mui/material";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
-
 
 const { ClipboardItem } = window;
 
@@ -67,7 +68,6 @@ function App() {
     setImageUrl(null);
     setTextColor(characters[character].color);
     setLoaded(false);
-    
   }, [character]);
 
   // Get Parameters from URL
@@ -110,11 +110,10 @@ function App() {
       if (params.get("textColor")) {
         setTextColor(params.get("textColor"));
       }
-      if(params.get("imageUrl")){
+      if (params.get("imageUrl")) {
         setImageUrl(decodeURIComponent(params.get("imageUrl")));
       }
       window.history.replaceState({}, document.title, location.pathname);
-
     }, 20);
   }, [location]);
 
@@ -138,33 +137,15 @@ function App() {
 
   img.onload = () => {
     setLoaded(true);
-
   };
 
   let angle = (Math.PI * text.length) / 7;
-
-  const handleUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageUrl(reader.result);
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-    // Reset the input value to allow reuploading the same image
-    event.target.value = null;
-
-    // reset all image positions
-    setImagePosition({ x: 0, y: 0 });
-  };
 
   const handleMouseDown = (e) => {
     const canvas = e.target.getBoundingClientRect();
     const x = e.clientX - canvas.left;
     const y = e.clientY - canvas.top;
-  
+
     // Check if click is near the text
     if (
       text.length > 0 &&
@@ -177,12 +158,12 @@ function App() {
       setDragStart({ x, y });
       return;
     }
-  
+
     const imgWidth = img.width * (scale / 100);
     const imgHeight = img.height * (scale / 100);
     const imgStartX = (canvas.width - imgWidth) / 2 + imagePosition.x;
     const imgStartY = (canvas.height - imgHeight) / 2 + imagePosition.y;
-  
+
     if (
       x > imgStartX &&
       x < imgStartX + imgWidth &&
@@ -194,7 +175,7 @@ function App() {
       return;
     }
   };
-  
+
   const handleMouseMove = (e) => {
     if (!isDragging && !isImageDragging) return;
 
@@ -203,24 +184,24 @@ function App() {
     const y = e.clientY - canvas.top;
     const deltaX = x - dragStart.x;
     const deltaY = y - dragStart.y;
-  
+
     if (isDragging) {
       setPosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
         y: prevPosition.y + deltaY,
       }));
     }
-  
+
     if (isImageDragging) {
       setImagePosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
         y: prevPosition.y - deltaY,
       }));
     }
-  
+
     setDragStart({ x, y });
   };
-  
+
   const handleMouseUp = () => {
     setIsDragging(false);
     setIsImageDragging(false);
@@ -228,24 +209,28 @@ function App() {
 
   const handleTouchStart = (e) => {
     // Prevent the default touch action
-    e.preventDefault();
-  const touch = e.touches[0];
-  handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
-};
+    const touch = e.touches[0];
+    handleMouseDown({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
 
-const handleTouchMove = (e) => {
-  // Prevent the default touch action
-  e.preventDefault();
-  const touch = e.touches[0];
-  handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY, target: e.target });
-};
+  const handleTouchMove = (e) => {
+    // Prevent the default touch action
+    const touch = e.touches[0];
+    handleMouseMove({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
 
-const handleTouchEnd = () => {
-  handleMouseUp();
+  const handleTouchEnd = () => {
+    handleMouseUp();
+  };
 
-};
-  
-  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -307,19 +292,19 @@ const handleTouchEnd = () => {
     } else {
       setImageUrl(null);
       setCharacter(data.character);
-      img.src = "/img/" + characters[data.character].img
+      img.src = "/img/" + characters[data.character].img;
     }
     setTimeout(() => {
-    setScale(data.scale);
-    setText(data.text);
-    setPosition(data.position);
-    setFontSize(data.fontSize);
-    setSpaceSize(data.spaceSize);
-    setRotate(data.rotate);
-    setCurve(data.curve);
-    setTextColor(data.textColor);
-    console.log(data.textColor)
-    setImagePosition(data.imagePosition);
+      setScale(data.scale);
+      setText(data.text);
+      setPosition(data.position);
+      setFontSize(data.fontSize);
+      setSpaceSize(data.spaceSize);
+      setRotate(data.rotate);
+      setCurve(data.curve);
+      setTextColor(data.textColor);
+      console.log(data.textColor);
+      setImagePosition(data.imagePosition);
     }, 100);
   };
 
@@ -334,13 +319,41 @@ const handleTouchEnd = () => {
     link.click();
   };
 
+  const getDominantColor = (imageObject) => {
+    const context = document.createElement("canvas").getContext("2d");
+    context.drawImage(imageObject, 0, 0, 1, 1);
+    const i = context.getImageData(0, 0, 1, 1).data;
+
+    const HEX =
+      "#" +
+      ((1 << 24) + (i[0] << 16) + (i[1] << 8) + i[2]).toString(16).slice(1);
+    return HEX;
+  };
+
+const accentHex = (hex) => {
+    let r = 255 - parseInt(hex.substring(1, 3), 16);
+    let g = 255 - parseInt(hex.substring(3, 5), 16);
+    let b = 255 - parseInt(hex.substring(5, 7), 16);
+
+    const toHex = (c) => c.toString(16).padStart(2, '0');
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImageUrl(reader.result); 
+        setImageUrl(reader.result);
         img.src = reader.result;
+        // Find the most dominant color in the image
+        const imageObject = new Image();
+        imageObject.src = reader.result;
+        imageObject.onload = () => {
+          const dom = getDominantColor(imageObject);
+          console.log(dom);
+          setTextColor(accentHex(dom));
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -367,14 +380,11 @@ const handleTouchEnd = () => {
     const canvas = document.getElementsByTagName("canvas")[0];
     await navigator.clipboard.write([
       new ClipboardItem({
-      "image/png": b64toBlob((canvas.toDataURL().split(",")[1])),
+        "image/png": b64toBlob(canvas.toDataURL().split(",")[1]),
       }),
     ]);
   };
 
-
-  
-  
   const exportVals = () => {
     const data = {
       character,
@@ -390,8 +400,8 @@ const handleTouchEnd = () => {
     };
 
     if (imageUrl) {
-        data.imageUrl = imageUrl;
-        data.custom = true;
+      data.imageUrl = imageUrl;
+      data.custom = true;
     }
 
     const json = JSON.stringify(data, null, 2);
@@ -403,9 +413,9 @@ const handleTouchEnd = () => {
 
     var defName = "";
     if (imageUrl) {
-       defName = "custom_image_data";
+      defName = "custom_image_data";
     } else {
-        defName = `${characters[character].name.replace(" ", "_")}_data`;
+      defName = `${characters[character].name.replace(" ", "_")}_data`;
     }
 
     const fileName = window.prompt("Enter the file name", `${defName}`);
@@ -430,16 +440,20 @@ const handleTouchEnd = () => {
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
             <div className="canvas">
-              <Canvas draw={draw} 
+              <Canvas
+                draw={draw}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}  
+                onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                style={{ cursor: isDragging || isImageDragging ? "grabbing" : "grab" , touchAction: "none"}}
-                />
+                style={{
+                  cursor: isDragging || isImageDragging ? "grabbing" : "grab",
+                  touchAction: "none",
+                }}
+              />
               <Slider
                 className="slider-horizontal"
                 value={position.x}
@@ -448,7 +462,7 @@ const handleTouchEnd = () => {
                 max={400}
                 step={1}
                 track={false}
-                color="secondary"
+                color="primary"
               />
               <div style={{ fontFamily: "YurukaStd", marginTop: "-10px" }}>
                 <label>X: </label>
@@ -462,7 +476,7 @@ const handleTouchEnd = () => {
                   max={200}
                   step={1}
                   track={false}
-                  color="secondary"
+                  color="primary"
                 />
               </div>
             </div>
@@ -480,7 +494,7 @@ const handleTouchEnd = () => {
             step={1}
             orientation="vertical"
             track={false}
-            color="secondary"
+            color="primary"
           />
 
           <label>Y: </label>
@@ -493,7 +507,7 @@ const handleTouchEnd = () => {
             step={1}
             track={false}
             orientation="vertical"
-            color="secondary"
+            color="primary"
           />
         </div>
 
@@ -537,7 +551,7 @@ const handleTouchEnd = () => {
                 max={100}
                 step={1}
                 track={false}
-                color="secondary"
+                color="primary"
               />
             </div>
             <div>
@@ -583,58 +597,78 @@ const handleTouchEnd = () => {
               multiline={true}
               fullWidth
               onChange={(e) => setText(e.target.value)}
-              style={{marginTop: '5px'}}
+              style={{ marginTop: "5px" }}
             />
           </div>
-          <div className="horizontal">
-            <div className="picker">
-              <Button
-                variant="contained"
-                color="secondary"
-                component="label"
-                style={{ marginTop: "0px" }}
-              >
-                Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUpload}
-                  hidden
-                />
-              </Button>
-            </div>
-            <div className="horizontal">
-              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetTextposition}  >
-                Reset Text Position
-              </Button>
-              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetImageposition}>
-                Reset Image Position
-              </Button>
-            </div>
 
-            <div className="picker" style={{ marginTop: "7px" }}>
-              <Picker setCharacter={setCharacter} />
-             </div>
-            
-            <div className="horizontal">
-              <Button variant="contained" color="secondary" component="label" style={{marginTop:'7px'}}>
-                Upload Image
-                <input type="file" accept="image/*" onChange={handleImageUpload} hidden/>
-              </Button>
+          <div className="picker" style={{ marginTop: "7px" }}>
+            <Picker setCharacter={setCharacter} />
+          </div>
+
+          <div className="horizontal">
+            <Button
+              variant="contained"
+              color="secondary"
+              component="label"
+              style={{ marginTop: "7px" }}
+            >
+              Upload Image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                hidden
+              />
+            </Button>
+          </div>
+          <div className="horizontal">
+            <div style={{ paddingTop: "-10px" }}>
+              <h3> Reset Positions </h3>
+
+              <div className="buttons" style={{ marginTop: "7px" }}>
+                <Grid container spacing={2} justifyContent="center">
+                  <Grid item>
+                    <Button
+                      color="secondary"
+                      variant="contained"
+                      style={{ marginTop: "7px" }}
+                      onClick={resetTextposition}
+                    >
+                      Text
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      color="secondary"
+                      variant="contained"
+                      style={{ marginTop: "7px" }}
+                      onClick={resetImageposition}
+                    >
+                      Image
+                    </Button>
+                  </Grid>
+                </Grid>
+              </div>
             </div>
-             <div className="buttons">
-              <Button color="secondary" onClick={copy}>
-                Copy
-              </Button>
-              <Button color="secondary" onClick={download}>
-                Download
-              </Button>
+            <div className="buttons">
+              <Grid container spacing={2} justifyContent="center">
+                <Grid item>
+                  <Button color="secondary" onClick={copy}>
+                    Copy
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button color="secondary" onClick={download}>
+                    Download
+                  </Button>
+                </Grid>
+              </Grid>
             </div>
-            <div classname="horizontal">
+            <Grid item>
               <Button color="secondary" onClick={exportVals}>
                 Export as JSON
               </Button>
-            </div>
+            </Grid>
           </div>
           <Button
             color="primary"
@@ -655,10 +689,6 @@ const handleTouchEnd = () => {
           Info
         </Button>
       </div>
-
- 
-
-      
     </div>
   );
 }

@@ -166,7 +166,7 @@
 .bannerbutton {
   flex: none;
   border-radius: 9999px;
-  background-color: #c56d87;
+  background-color: #6dbbc5;
   padding: 4px 14px;
   font-size: 14px;
   font-weight: bold;
@@ -176,7 +176,7 @@
 }
 
 .bannerbutton:hover {
-  background-color: #c55778;
+  background-color: #57c5ba;
 }
 
 .bannerbutton span {

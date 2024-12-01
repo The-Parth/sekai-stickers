@@ -9,8 +9,31 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
+    primary: {
+      main: '#2196f3', // Blue color
+    },
+    secondary: {
+      main: '#00bcd4', // Cyan-blue color
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          // Button styles
+        },
+      },
+    },
+    MuiSlider: {
+      styleOverrides: {
+        root: {
+          color: '#00bcd4', // Slider color
+        },
+      },
+    },
   },
 });
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
