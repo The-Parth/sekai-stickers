@@ -540,13 +540,13 @@ function App() {
               />
             </div>
 
-            <div style={{ paddingBottom: "15px" }}>
+            <div style={{ paddingBottom: "10px" }}>
               <label>Text Color:</label>
               <input
                 type="color"
                 value={textColor}
                 onChange={(e) => setTextColor(e.target.value)}
-                style={{ marginLeft: "25px" }}
+                style={{ marginLeft: "20px" }}
               />
             </div>
           </div>
@@ -559,7 +559,7 @@ function App() {
               multiline={true}
               fullWidth
               onChange={(e) => setText(e.target.value)}
-              style={{marginTop: '15px'}}
+              style={{marginTop: '5px'}}
             />
           </div>
           <div className="horizontal">
@@ -568,7 +568,7 @@ function App() {
                 variant="contained"
                 color="secondary"
                 component="label"
-                style={{ marginTop: "15px" }}
+                style={{ marginTop: "0px" }}
               >
                 Upload Image
                 <input
@@ -580,20 +580,20 @@ function App() {
               </Button>
             </div>
             <div className="horizontal">
-              <Button color="secondary" variant="contained" style={{marginTop:'15px'}} onClick={resetTextposition}  >
+              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetTextposition}  >
                 Reset Text Position
               </Button>
-              <Button color="secondary" variant="contained" style={{marginTop:'15px'}} onClick={resetImageposition}>
+              <Button color="secondary" variant="contained" style={{marginTop:'7px'}} onClick={resetImageposition}>
                 Reset Image Position
               </Button>
             </div>
 
-            <div className="picker" style={{ marginTop: "15px" }}>
+            <div className="picker" style={{ marginTop: "7px" }}>
               <Picker setCharacter={setCharacter} />
              </div>
             
             <div className="horizontal">
-              <Button variant="contained" color="secondary" component="label" style={{marginTop:'15px'}}>
+              <Button variant="contained" color="secondary" component="label" style={{marginTop:'7px'}}>
                 Upload Image
                 <input type="file" accept="image/*" onChange={handleImageUpload} hidden/>
               </Button>
