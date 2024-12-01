@@ -32,6 +32,16 @@ function App() {
     setInfoOpen(false);
   };
 
+  const resetTextposition = () => {
+    setPosition({
+      x: characters[character].defaultText.x + 50,
+      y: characters[character].defaultText.y + 60,
+    });
+  };
+  const resetImageposition = () => {
+    setImagePosition({ x: 0, y: 0 });
+  };
+
   const [character, setCharacter] = useState(49);
   const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
@@ -49,6 +59,7 @@ function App() {
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isImageDragging, setIsImageDragging] = useState(false);
   const img = new Image();
 
   //reset uploaded image's url and text colour when a new character is selected
@@ -154,43 +165,68 @@ function App() {
     const x = e.clientX - canvas.left;
     const y = e.clientY - canvas.top;
   
-    //check if the click is near the text
+    // Check if click is near the text
     if (
-    
-      x<0 || x>400 || y<0 || y>390 || x < position.x - 120 || x > position.x + 120 || y < position.y - 50 || y > position.y + 50
-      ||text.length==0
+      text.length > 0 &&
+      x > position.x - 120 &&
+      x < position.x + 120 &&
+      y > position.y - 50 &&
+      y < position.y + 50
     ) {
+      setIsDragging(true);
+      setDragStart({ x, y });
       return;
     }
-    setIsDragging(true);
-    setDragStart({ x, y });
+  
+    const imgWidth = img.width * (scale / 100);
+    const imgHeight = img.height * (scale / 100);
+    const imgStartX = (canvas.width - imgWidth) / 2 + imagePosition.x;
+    const imgStartY = (canvas.height - imgHeight) / 2 + imagePosition.y;
+  
+    if (
+      x > imgStartX &&
+      x < imgStartX + imgWidth &&
+      y > imgStartY &&
+      y < imgStartY + imgHeight
+    ) {
+      setIsImageDragging(true);
+      setDragStart({ x, y });
+      return;
+    }
   };
   
   const handleMouseMove = (e) => {
+    if (!isDragging && !isImageDragging) return;
 
-    if (!isDragging) return;
-  
     const canvas = e.target.getBoundingClientRect();
     const x = e.clientX - canvas.left;
     const y = e.clientY - canvas.top;
-  
     const deltaX = x - dragStart.x;
     const deltaY = y - dragStart.y;
-
   
-    setPosition((prevPosition) => ({
-      x: prevPosition.x + deltaX,
-      y: prevPosition.y + deltaY,
-    }));
+    if (isDragging) {
+      setPosition((prevPosition) => ({
+        x: prevPosition.x + deltaX,
+        y: prevPosition.y + deltaY,
+      }));
+    }
+  
+    if (isImageDragging) {
+      setImagePosition((prevPosition) => ({
+        x: prevPosition.x + deltaX,
+        y: prevPosition.y - deltaY,
+      }));
+    }
   
     setDragStart({ x, y });
-    console.log("Dragged Position:", { x: position.x, y: position.y });
   };
   
   const handleMouseUp = () => {
     setIsDragging(false);
+    setIsImageDragging(false);
   };
-
+  
+  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -543,6 +579,15 @@ function App() {
                 />
               </Button>
             </div>
+            <div className="horizontal">
+              <Button color="secondary" variant="contained" style={{marginTop:'15px'}} onClick={resetTextposition}  >
+                Reset Text Position
+              </Button>
+              <Button color="secondary" variant="contained" style={{marginTop:'15px'}} onClick={resetImageposition}>
+                Reset Image Position
+              </Button>
+            </div>
+
             <div className="picker" style={{ marginTop: "15px" }}>
               <Picker setCharacter={setCharacter} />
              </div>
