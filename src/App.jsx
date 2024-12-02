@@ -61,7 +61,22 @@ function App() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [activeAnchor, setActiveAnchor] = useState(null);
+  const [xscale, setXscale] = useState(1);
+  const [yscale, setYscale] = useState(1);
   const img = new Image();
+const pointSize=10;
+//use state of array of 8 points 
+const [points, setPoints] = useState([
+  { x: 0, y: 0 }, // Top-left
+  { x: 0, y: 0 }, // Top-right
+  { x: 0, y: 0 }, // Bottom-left
+  { x: 0, y: 0 }, // Bottom-right
+  { x: 0, y: 0 }, // Top-middle
+  { x: 0, y: 0 }, // Left-middle
+  { x: 0, y: 0 }, // Bottom-middle
+  { x: 0, y: 0 }, // Right-middle
+]);
 
   //reset uploaded image's url and text colour when a new character is selected
   useEffect(() => {
@@ -160,22 +175,39 @@ function App() {
       return;
     }
 
-    const imgWidth = img.width * (scale / 100);
-    const imgHeight = img.height * (scale / 100);
-    const imgStartX = (canvas.width - imgWidth) / 2 + imagePosition.x;
-    const imgStartY = (canvas.height - imgHeight) / 2 + imagePosition.y;
+    const hRatio = canvas.width / img.width;
+    const vRatio = canvas.height / img.height;
+    const ratio = (Math.min(hRatio, vRatio) *scale) / 100;
+    const imgStartX = (canvas.width - img.width * ratio) / 2;
+    const imgStartY = (canvas.height - img.height * ratio) / 2;
+    const imgRenderedWidth = img.width * ratio;
+    const imgRenderedHeight = img.height * ratio;
+    
+   if (
+  x > imgStartX - 25 &&
+  x < imgStartX + imgRenderedWidth + 25 &&
+  y > imgStartY - 25 &&
+  y < imgStartY + imgRenderedHeight + 25
+) {
+  
+  setIsImageDragging(true);
+  for (let i = 0; i < points.length; i++) {
+    const { x: px, y: py } = points[i];
+    if (Math.abs(x - px) <= pointSize && Math.abs(y - py) <= pointSize) {
+      console.log("Point clicked at index:", i);
+      setActiveAnchor(i);
+      }
+    
+  }
+  setDragStart({ x, y });
+  setSelectedElement("image");
+  
 
-    if (
-      x > imgStartX &&
-      x < imgStartX + imgWidth &&
-      y > imgStartY &&
-      y < imgStartY + imgHeight
-    ) {
-      setIsImageDragging(true);
-      setDragStart({ x, y });
-      setSelectedElement("image");
-      return;
-    }
+  // console.log(points);
+
+  return;
+}
+    
     setSelectedElement(null);
   };
 
@@ -189,6 +221,53 @@ function App() {
     const deltaX = x - dragStart.x;
     const deltaY = y - dragStart.y;
 
+    const updateScale = (activeAnchor, dx, dy) => {
+      setXscale((prevXscale) => {
+        let newXscale = prevXscale;
+        switch (activeAnchor) {
+          case 0: // Top-left
+          case 2: // Bottom-left
+          case 5: // Left-middle
+            newXscale -= dx * 0.001; // Horizontal drag            
+            break;
+          case 1: // Top-right
+          case 3: // Bottom-right
+          case 7: // Right-middle
+            newXscale += dx * 0.01; // Horizontal drag
+            break;
+          default:
+            break;
+        }
+        return newXscale;
+      });
+  
+      setYscale((prevYscale) => {
+        let newYscale = prevYscale;
+        switch (activeAnchor) {
+          case 0: // Top-left
+          case 1: // Top-right
+          case 4: // Top-middle
+            newYscale -= dy * 0.01; // Vertical drag
+            break;
+          case 2: // Bottom-left
+          case 3: // Bottom-right
+          case 6: // Bottom-middle
+            newYscale += dy * 0.01; // Vertical drag
+            break;
+          default:
+            break;
+        }
+        return newYscale;
+      });
+     
+      
+    };
+    
+
+    
+
+    
+
     if (isDragging) {
       setPosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
@@ -196,45 +275,28 @@ function App() {
       }));
     }
 
-    if (isImageDragging) {
+    if (isImageDragging&&activeAnchor==null) {
       setImagePosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
         y: prevPosition.y - deltaY,
       }));
     }
+    if (isImageDragging&&activeAnchor!==null) { 
+
+      updateScale(activeAnchor, deltaX, deltaY);
+    }
 
     setDragStart({ x, y });
   };
+  
 
   const handleMouseUp = () => {
     setIsDragging(false);
     setIsImageDragging(false);
+    setActiveAnchor(null);
   };
 
-  const handleTouchStart = (e) => {
-    // Prevent the default touch action
-    const touch = e.touches[0];
-    handleMouseDown({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      target: e.target,
-    });
-  };
-
-  const handleTouchMove = (e) => {
-    // Prevent the default touch action
-    const touch = e.touches[0];
-    handleMouseMove({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      target: e.target,
-    });
-  };
-
-  const handleTouchEnd = () => {
-    handleMouseUp();
-  };
-
+  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -254,14 +316,47 @@ function App() {
         img.height,
         centerShift_x + imagePosition.x,
         centerShift_y - imagePosition.y,
-        img.width * ratio,
-        img.height * ratio
+        img.width * ratio*xscale,
+        img.height * ratio*yscale
       );
-      if(selectedElement === "image") {
+      if (selectedElement === "image") {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "#00bcd4";
-        ctx.strokeRect(centerShift_x + imagePosition.x, centerShift_y - imagePosition.y, img.width * ratio, img.height * ratio);
-      }
+        const imageX = centerShift_x + imagePosition.x;
+        const imageY = centerShift_y - imagePosition.y;
+        const imageWidth = img.width * ratio*xscale;
+        const imageHeight = img.height * ratio*yscale;
+        ctx.strokeRect(imageX, imageY, imageWidth, imageHeight);
+    
+        const pointSize = 6; 
+    
+        const points = [
+            { x: imageX, y: imageY }, // Top-left
+            { x: imageX + imageWidth, y: imageY }, // Top-right
+            { x: imageX, y: imageY + imageHeight }, // Bottom-left
+            { x: imageX + imageWidth, y: imageY + imageHeight }, // Bottom-right
+            { x: imageX + imageWidth / 2, y: imageY }, // Top-middle
+            { x: imageX, y: imageY + imageHeight / 2 }, // Left-middle
+            { x: imageX + imageWidth / 2, y: imageY + imageHeight }, // Bottom-middle
+            { x: imageX + imageWidth, y: imageY + imageHeight / 2 }, // Right-middle
+        ];
+
+        setPoints(points);
+      
+
+
+
+        
+    
+        points.forEach(point => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
+            ctx.fillStyle = "#00bcd4";
+            ctx.fill();
+            ctx.closePath();
+        });
+        
+    }
       ctx.font = `${fontSize}px YurukaStd, SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
@@ -317,6 +412,30 @@ function App() {
         ctx.restore();
       }
     }
+  };
+
+  const handleTouchStart = (e) => {
+    // Prevent the default touch action
+    const touch = e.touches[0];
+    handleMouseDown({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    // Prevent the default touch action
+    const touch = e.touches[0];
+    handleMouseMove({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseUp();
   };
 
   const importDataCallback = (data) => {
