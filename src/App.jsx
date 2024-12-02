@@ -7,7 +7,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
 import { Grid } from "@mui/material";
-import { styled } from "@mui/material";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
@@ -61,6 +60,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isImageDragging, setIsImageDragging] = useState(false);
+  const [selectedElement, setSelectedElement] = useState(null);
   const img = new Image();
 
   //reset uploaded image's url and text colour when a new character is selected
@@ -156,6 +156,7 @@ function App() {
     ) {
       setIsDragging(true);
       setDragStart({ x, y });
+      setSelectedElement("text");
       return;
     }
 
@@ -172,9 +173,12 @@ function App() {
     ) {
       setIsImageDragging(true);
       setDragStart({ x, y });
+      setSelectedElement("image");
       return;
     }
+    setSelectedElement(null);
   };
+
 
   const handleMouseMove = (e) => {
     if (!isDragging && !isImageDragging) return;
@@ -253,6 +257,11 @@ function App() {
         img.width * ratio,
         img.height * ratio
       );
+      if(selectedElement === "image") {
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#00bcd4";
+        ctx.strokeRect(centerShift_x + imagePosition.x, centerShift_y - imagePosition.y, img.width * ratio, img.height * ratio);
+      }
       ctx.font = `${fontSize}px YurukaStd, SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
@@ -280,6 +289,31 @@ function App() {
           ctx.fillText(lines[i], 0, k);
           k += spaceSize;
         }
+        if (selectedElement === "text") {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#00bcd4";
+        
+          //all that math for a text selection box 
+          const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+          const lineHeight = fontSize * 1.3; 
+          const boxHeight = (lines.length * lineHeight);
+      
+          const padding = fontSize * 0.3;
+      
+          const totalHeight = boxHeight + padding * 2 + ((lines.length*spaceSize)/2 - fontSize);
+      
+          const yOffset = -(boxHeight / 2 + padding);
+      
+          ctx.strokeRect(
+              -maxWidth / 2 - padding,  
+              yOffset,                  
+              maxWidth + 2 * padding,  
+              totalHeight+((lines.length-1)*fontSize)           
+          );
+      }
+      
+      
+      
         ctx.restore();
       }
     }
