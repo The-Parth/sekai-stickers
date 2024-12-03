@@ -205,10 +205,10 @@ const [points, setPoints] = useState([
     const imgRenderedHeight = img.height * ratio;
     
    if (
-  x > imgStartX - 10 &&
-  x < imgStartX + imgRenderedWidth + 10 &&
-  y > imgStartY - 10 &&
-  y < imgStartY + imgRenderedHeight + 10
+  x > imgStartX-15 &&
+  x < imgStartX + imgRenderedWidth+15 &&
+  y > imgStartY-15 &&
+  y < imgStartY + imgRenderedHeight+15
 ) {
 
   setIsImageDragging(true);
@@ -445,7 +445,7 @@ const [points, setPoints] = useState([
     
         points.forEach(point => {
             ctx.beginPath();
-            ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
+            ctx.arc(point.x, point.y, pointSize+2, 0, Math.PI * 2);
             ctx.fillStyle = "#00bcd4";
             ctx.fill();
             ctx.closePath();
