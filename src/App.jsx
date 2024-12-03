@@ -10,6 +10,7 @@ import { Grid } from "@mui/material";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
+import FontPicker from "./components/FontPicker";
 
 const { ClipboardItem } = window;
 
@@ -77,6 +78,7 @@ function App() {
   const [activeAnchor, setActiveAnchor] = useState(null);
   const [xscale, setXscale] = useState(1);
   const [yscale, setYscale] = useState(1);
+  const [font, setFont] = useState("YurukaStd");
   const img = new Image();
 const pointSize=10;
 //use state of array of 8 points 
@@ -452,7 +454,7 @@ const [points, setPoints] = useState([
         });
         
     }
-      ctx.font = `${fontSize}px YurukaStd, SSFangTangTi`;
+      ctx.font = `${fontSize}px ${font}, SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
 
@@ -879,6 +881,12 @@ const accentHex = (hex) => {
                 hidden
               />
             </Button>
+          </div>
+          <div
+            className="horizontal"
+            style={{ marginTop: "7px", marginBottom: "7px" }}
+          >
+            <FontPicker mainSetter={setFont} />
           </div>
           <div className="horizontal">
             <div style={{ paddingTop: "-10px" }}>
