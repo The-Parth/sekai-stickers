@@ -215,6 +215,8 @@ const [points, setPoints] = useState([
   const handleMouseMove = (e) => {
     if (!isDragging && !isImageDragging) return;
 
+   
+
     const canvas = e.target.getBoundingClientRect();
     const x = e.clientX - canvas.left;
     const y = e.clientY - canvas.top;
@@ -224,50 +226,119 @@ const [points, setPoints] = useState([
     const updateScale = (activeAnchor, dx, dy) => {
       setXscale((prevXscale) => {
         let newXscale = prevXscale;
+        //this one was fun to figure out
         switch (activeAnchor) {
           case 0: // Top-left
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + dx,
+              y: prevImagePosition.y - dy,
+            }));
+            newXscale -= dx * 0.003;
+            break;
+          }
+    
           case 2: // Bottom-left
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + dx,
+              y: prevImagePosition.y,
+            }));
+            newXscale -= dx * 0.003;
+            break;
+          }
+    
           case 5: // Left-middle
-            newXscale -= dx * 0.001; // Horizontal drag            
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + dx,
+              y: prevImagePosition.y,
+            }));
+            newXscale -= dx * 0.003;
             break;
+          }
+    
           case 1: // Top-right
-          case 3: // Bottom-right
-          case 7: // Right-middle
-            newXscale += dx * 0.01; // Horizontal drag
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x,
+              y: prevImagePosition.y - dy,
+            }));
+            newXscale += dx * 0.002;
             break;
+          }
+    
+          case 3: // Bottom-right
+          {
+            newXscale += dx * 0.002;
+            break;
+          }
+    
+          case 7: // Right-middle
+          {
+            newXscale += dx * 0.002;
+            break;
+          }
+    
           default:
             break;
         }
+    
         return newXscale;
       });
-  
+    
       setYscale((prevYscale) => {
         let newYscale = prevYscale;
+    
         switch (activeAnchor) {
           case 0: // Top-left
+          {
+            newYscale -= dy * 0.003;
+            break;
+          }
+    
           case 1: // Top-right
+          {
+            newYscale -= dy * 0.003;
+            break;
+          }
+    
           case 4: // Top-middle
-            newYscale -= dy * 0.01; // Vertical drag
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x,
+              y: prevImagePosition.y - dy,
+            }));
+            newYscale -= dy * 0.003;
             break;
+          }
+    
           case 2: // Bottom-left
-          case 3: // Bottom-right
-          case 6: // Bottom-middle
-            newYscale += dy * 0.01; // Vertical drag
+          {
+            newYscale += dy * 0.003;
             break;
+          }
+    
+          case 3: // Bottom-right
+          {
+            newYscale += dy * 0.003;
+            break;
+          }
+    
+          case 6: // Bottom-middle
+          {
+            newYscale += dy * 0.003;
+            break;
+          }
+    
           default:
             break;
         }
+    
         return newYscale;
       });
-     
-      
     };
     
-
-    
-
-    
-
     if (isDragging) {
       setPosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
