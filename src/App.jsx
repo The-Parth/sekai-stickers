@@ -7,7 +7,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
 import { Grid } from "@mui/material";
-import { styled } from "@mui/material";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
@@ -33,14 +32,27 @@ function App() {
     setInfoOpen(false);
   };
 
+  const isSmall = () => window.matchMedia("(max-width: 768px)").matches;
+
+
   const resetTextposition = () => {
+
     setPosition({
       x: characters[character].defaultText.x + 50,
       y: characters[character].defaultText.y + 60,
     });
+    setFontSize(characters[character].defaultText.s);
+    setRotate(characters[character].defaultText.r);
+    setCurve(false);
+    setText(characters[character].defaultText.text);
+    setTextColor(characters[character].color);
+
   };
   const resetImageposition = () => {
+    setXscale(1);
+    setYscale(1);
     setImagePosition({ x: 0, y: 0 });
+    setScale(85);
   };
 
   const [character, setCharacter] = useState(49);
@@ -61,7 +73,23 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isImageDragging, setIsImageDragging] = useState(false);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [activeAnchor, setActiveAnchor] = useState(null);
+  const [xscale, setXscale] = useState(1);
+  const [yscale, setYscale] = useState(1);
   const img = new Image();
+const pointSize=10;
+//use state of array of 8 points 
+const [points, setPoints] = useState([
+  { x: 0, y: 0 }, // Top-left
+  { x: 0, y: 0 }, // Top-right
+  { x: 0, y: 0 }, // Bottom-left
+  { x: 0, y: 0 }, // Bottom-right
+  { x: 0, y: 0 }, // Top-middle
+  { x: 0, y: 0 }, // Left-middle
+  { x: 0, y: 0 }, // Bottom-middle
+  { x: 0, y: 0 }, // Right-middle
+]);
 
   //reset uploaded image's url and text colour when a new character is selected
   useEffect(() => {
@@ -113,6 +141,14 @@ function App() {
       if (params.get("imageUrl")) {
         setImageUrl(decodeURIComponent(params.get("imageUrl")));
       }
+      if(params.get("xscale"))
+      {
+        setXscale(parseFloat(params.get("xscale")));
+      }
+      if(params.get("yscale"))
+      {
+        setYscale(parseFloat(params.get("yscale")));
+      }
       window.history.replaceState({}, document.title, location.pathname);
     }, 20);
   }, [location]);
@@ -156,28 +192,52 @@ function App() {
     ) {
       setIsDragging(true);
       setDragStart({ x, y });
+      setSelectedElement("text");
       return;
     }
 
-    const imgWidth = img.width * (scale / 100);
-    const imgHeight = img.height * (scale / 100);
-    const imgStartX = (canvas.width - imgWidth) / 2 + imagePosition.x;
-    const imgStartY = (canvas.height - imgHeight) / 2 + imagePosition.y;
+    const hRatio = canvas.width / img.width;
+    const vRatio = canvas.height / img.height;
+    const ratio = (Math.min(hRatio, vRatio) *scale) / 100;
+    const imgStartX = (canvas.width - img.width * ratio) / 2;
+    const imgStartY = (canvas.height - img.height * ratio) / 2;
+    const imgRenderedWidth = img.width * ratio;
+    const imgRenderedHeight = img.height * ratio;
+    
+   if (
+  x > imgStartX-15 &&
+  x < imgStartX + imgRenderedWidth+15 &&
+  y > imgStartY-15 &&
+  y < imgStartY + imgRenderedHeight+15
+) {
 
-    if (
-      x > imgStartX &&
-      x < imgStartX + imgWidth &&
-      y > imgStartY &&
-      y < imgStartY + imgHeight
-    ) {
-      setIsImageDragging(true);
-      setDragStart({ x, y });
-      return;
-    }
+  setIsImageDragging(true);
+  for (let i = 0; i < points.length; i++) {
+    const { x: px, y: py } = points[i];
+    const touchBuffer = isSmall()? 45:0;
+    if (Math.abs(x - px) <= pointSize+touchBuffer && Math.abs(y - py) <= pointSize+touchBuffer) {
+      setActiveAnchor(i);
+      }
+    
+  }
+  
+  setDragStart({ x, y });
+  setSelectedElement("image");
+  
+
+  // console.log(points);
+
+  return;
+}
+    
+    setSelectedElement(null);
   };
+
 
   const handleMouseMove = (e) => {
     if (!isDragging && !isImageDragging) return;
+
+   
 
     const canvas = e.target.getBoundingClientRect();
     const x = e.clientX - canvas.left;
@@ -185,6 +245,124 @@ function App() {
     const deltaX = x - dragStart.x;
     const deltaY = y - dragStart.y;
 
+    const updateScale = (activeAnchor, dx, dy) => {
+      setXscale((prevXscale) => {
+        let newXscale = prevXscale;
+        //this one was fun to figure out
+        switch (activeAnchor) {
+          case 0: // Top-left
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + dx,
+              y: prevImagePosition.y - dy,
+            }));
+            newXscale -= dx * 0.003;
+            break;
+          }
+    
+          case 2: // Bottom-left
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + dx,
+              y: prevImagePosition.y,
+            }));
+            newXscale -= dx * 0.003;
+            break;
+          }
+    
+          case 5: // Left-middle
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x + (1.2*scale*dx/100),
+              y: prevImagePosition.y,
+            }));
+            newXscale -= dx * 0.003;
+            break;
+          }
+    
+          case 1: // Top-right
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x,
+              y: prevImagePosition.y - dy,
+            }));
+            newXscale += dx * 0.003;
+            break;
+          }
+    
+          case 3: // Bottom-right
+          {
+            newXscale += dx * 0.003;
+            break;
+          }
+    
+          case 7: // Right-middle
+          {
+            newXscale += dx * 0.003;
+            break;
+          }
+    
+          default:
+            break;
+        }
+    
+        return newXscale;
+      });
+    
+      setYscale((prevYscale) => {
+        let newYscale = prevYscale;
+    
+        switch (activeAnchor) {
+          case 0: // Top-left
+          {
+
+            newYscale -= dy * 0.003;
+            break;
+          }
+    
+          case 1: // Top-right
+          {
+            
+            newYscale -= dy * 0.003;
+            break;
+          }
+    
+          case 4: // Top-middle
+          {
+            setImagePosition((prevImagePosition) => ({
+              x: prevImagePosition.x,
+              y: prevImagePosition.y - (scale*dy)/100,
+            }));
+            newYscale -= dy * 0.003;
+            break;
+          }
+    
+          case 2: // Bottom-left
+          {
+            newYscale += dy * 0.003;
+            break;
+          }
+    
+          case 3: // Bottom-right
+          {
+            newYscale += dy * 0.003;
+            break;
+          }
+    
+          case 6: // Bottom-middle
+          {
+            newYscale += dy * 0.003;
+            break;
+          }
+    
+          default:
+            break;
+        }
+    
+        return newYscale;
+      });
+    };
+    
     if (isDragging) {
       setPosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
@@ -192,45 +370,28 @@ function App() {
       }));
     }
 
-    if (isImageDragging) {
+    if (isImageDragging&&activeAnchor==null) {
       setImagePosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
         y: prevPosition.y - deltaY,
       }));
     }
+    if (isImageDragging&&activeAnchor!==null) { 
+
+      updateScale(activeAnchor, deltaX, deltaY);
+    }
 
     setDragStart({ x, y });
   };
+  
 
   const handleMouseUp = () => {
     setIsDragging(false);
     setIsImageDragging(false);
+    setActiveAnchor(null);
   };
 
-  const handleTouchStart = (e) => {
-    // Prevent the default touch action
-    const touch = e.touches[0];
-    handleMouseDown({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      target: e.target,
-    });
-  };
-
-  const handleTouchMove = (e) => {
-    // Prevent the default touch action
-    const touch = e.touches[0];
-    handleMouseMove({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      target: e.target,
-    });
-  };
-
-  const handleTouchEnd = () => {
-    handleMouseUp();
-  };
-
+  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -250,9 +411,47 @@ function App() {
         img.height,
         centerShift_x + imagePosition.x,
         centerShift_y - imagePosition.y,
-        img.width * ratio,
-        img.height * ratio
+        img.width * ratio*xscale,
+        img.height * ratio*yscale
       );
+      if (selectedElement === "image") {
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#00bcd4";
+        const imageX = centerShift_x + imagePosition.x;
+        const imageY = centerShift_y - imagePosition.y;
+        const imageWidth = img.width * ratio*xscale;
+        const imageHeight = img.height * ratio*yscale;
+        ctx.strokeRect(imageX, imageY, imageWidth, imageHeight);
+    
+        const pointSize = 6; 
+    
+        const points = [
+            { x: imageX, y: imageY }, // Top-left
+            { x: imageX + imageWidth, y: imageY }, // Top-right
+            { x: imageX, y: imageY + imageHeight }, // Bottom-left
+            { x: imageX + imageWidth, y: imageY + imageHeight }, // Bottom-right
+            { x: imageX + imageWidth / 2, y: imageY }, // Top-middle
+            { x: imageX, y: imageY + imageHeight / 2 }, // Left-middle
+            { x: imageX + imageWidth / 2, y: imageY + imageHeight }, // Bottom-middle
+            { x: imageX + imageWidth, y: imageY + imageHeight / 2 }, // Right-middle
+        ];
+
+        setPoints(points);
+      
+
+
+
+        
+    
+        points.forEach(point => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, pointSize+2, 0, Math.PI * 2);
+            ctx.fillStyle = "#00bcd4";
+            ctx.fill();
+            ctx.closePath();
+        });
+        
+    }
       ctx.font = `${fontSize}px YurukaStd, SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
@@ -280,9 +479,58 @@ function App() {
           ctx.fillText(lines[i], 0, k);
           k += spaceSize;
         }
+        if (selectedElement === "text") {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#00bcd4";
+        
+          //all that math for a text selection box 
+          const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+          const lineHeight = fontSize * 1.3; 
+          const boxHeight = (lines.length * lineHeight);
+      
+          const padding = fontSize * 0.3;
+      
+          const totalHeight = boxHeight + padding * 2 + ((lines.length*spaceSize)/2 - fontSize);
+      
+          const yOffset = -(boxHeight / 2 + padding);
+      
+          ctx.strokeRect(
+              -maxWidth / 2 - padding,  
+              yOffset,                  
+              maxWidth + 2 * padding,  
+              totalHeight+((lines.length-1)*fontSize)           
+          );
+      }
+      
+      
+      
         ctx.restore();
       }
     }
+  };
+
+  const handleTouchStart = (e) => {
+    // Prevent the default touch action
+    const touch = e.touches[0];
+    handleMouseDown({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    handleMouseMove({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      target: e.target,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseUp();
   };
 
   const importDataCallback = (data) => {
@@ -305,10 +553,15 @@ function App() {
       setTextColor(data.textColor);
       console.log(data.textColor);
       setImagePosition(data.imagePosition);
+      setXscale(data.xscale);
+      setYscale(data.yscale);
+
     }, 100);
   };
 
   const download = async () => {
+    await new Promise((r) => setTimeout(r, 0.1));
+
     const canvas = document.getElementsByTagName("canvas")[0];
     const link = document.createElement("a");
     link.download = `${characters[character].name.replace(
@@ -377,6 +630,9 @@ const accentHex = (hex) => {
   }
 
   const copy = async () => {
+    //wait for 1 milisecond
+    await new Promise((r) => setTimeout(r, 0.1));
+
     const canvas = document.getElementsByTagName("canvas")[0];
     await navigator.clipboard.write([
       new ClipboardItem({
@@ -397,6 +653,8 @@ const accentHex = (hex) => {
       curve,
       textColor,
       imagePosition,
+      xscale,
+      yscale,
     };
 
     if (imageUrl) {
@@ -429,7 +687,7 @@ const accentHex = (hex) => {
   };
 
   return (
-    <div className="App" style={{ fontFamily: "YurukaStd" }}>
+    <div className="App" style={{ fontFamily: "YurukaStd" }} onClick={() => setSelectedElement(null)}>
       <Info open={infoOpen} handleClose={handleClose} />
       <div className="header">
         <h1 onClick={() => (window.location.href = "/")}>
@@ -439,7 +697,7 @@ const accentHex = (hex) => {
       <div className="container">
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
-            <div className="canvas">
+           <div className="canvas" onClick={(e) => e.stopPropagation() }>
               <Canvas
                 draw={draw}
                 onMouseDown={handleMouseDown}
@@ -449,6 +707,7 @@ const accentHex = (hex) => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+
                 style={{
                   cursor: isDragging || isImageDragging ? "grabbing" : "grab",
                   touchAction: "none",
@@ -519,7 +778,7 @@ const accentHex = (hex) => {
                 className="slider"
                 value={scale}
                 onChange={(e, v) => setScale(v)}
-                min={15}
+                min={50}
                 max={110}
                 step={1}
                 track={false}
@@ -623,7 +882,7 @@ const accentHex = (hex) => {
           </div>
           <div className="horizontal">
             <div style={{ paddingTop: "-10px" }}>
-              <h3> Reset Positions </h3>
+              <h3> Reset </h3>
 
               <div className="buttons" style={{ marginTop: "7px" }}>
                 <Grid container spacing={2} justifyContent="center">
