@@ -136,6 +136,9 @@ const Importer = ({ callback }) => {
         var rotate = 0;
         var text ="";
         var curve = false;
+        var xscale = 1;
+        var yscale = 1;
+        
         // read data to variable
         if (jsonData.text) {
             console.log("Text: ", jsonData.text);
@@ -178,6 +181,15 @@ const Importer = ({ callback }) => {
             imagePositionX = jsonData.imagePosition.x;
             imagePositionY = jsonData.imagePosition.y;
         }
+        if (jsonData.xscale) {
+            console.log("X Scale: ", jsonData.xscale);
+            xscale = jsonData.xscale;
+        }
+        if (jsonData.yscale) {
+            console.log("Y Scale: ", jsonData.yscale);
+            yscale = jsonData.yscale;
+        }
+
         var imageUrl = null;
         if (jsonData.custom) {
             if (jsonData.imageUrl) {
@@ -185,6 +197,7 @@ const Importer = ({ callback }) => {
                 imageUrl = jsonData.imageUrl;
             }
         }
+        
         // redirect to the main page
         const data = {
             scale: scale,
@@ -204,7 +217,9 @@ const Importer = ({ callback }) => {
             text: text,
             textColor: jsonData.textColor,
             custom: jsonData.custom,
-            imageUrl: imageUrl
+            imageUrl: imageUrl,
+            xscale: xscale,
+            yscale: yscale
         };
 
         // parse data to callback function

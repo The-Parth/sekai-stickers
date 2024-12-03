@@ -33,13 +33,23 @@ function App() {
   };
 
   const resetTextposition = () => {
+
     setPosition({
       x: characters[character].defaultText.x + 50,
       y: characters[character].defaultText.y + 60,
     });
+    setFontSize(characters[character].defaultText.s);
+    setRotate(characters[character].defaultText.r);
+    setCurve(false);
+    setText(characters[character].defaultText.text);
+    setTextColor(characters[character].color);
+
   };
   const resetImageposition = () => {
+    setXscale(1);
+    setYscale(1);
     setImagePosition({ x: 0, y: 0 });
+    setScale(85);
   };
 
   const [character, setCharacter] = useState(49);
@@ -128,6 +138,14 @@ const [points, setPoints] = useState([
       if (params.get("imageUrl")) {
         setImageUrl(decodeURIComponent(params.get("imageUrl")));
       }
+      if(params.get("xscale"))
+      {
+        setXscale(parseFloat(params.get("xscale")));
+      }
+      if(params.get("yscale"))
+      {
+        setYscale(parseFloat(params.get("yscale")));
+      }
       window.history.replaceState({}, document.title, location.pathname);
     }, 20);
   }, [location]);
@@ -184,10 +202,10 @@ const [points, setPoints] = useState([
     const imgRenderedHeight = img.height * ratio;
     
    if (
-  x > imgStartX - 25 &&
-  x < imgStartX + imgRenderedWidth + 25 &&
-  y > imgStartY - 25 &&
-  y < imgStartY + imgRenderedHeight + 25
+  x > imgStartX - 30 &&
+  x < imgStartX + imgRenderedWidth + 30 &&
+  y > imgStartY - 30 &&
+  y < imgStartY + imgRenderedHeight + 30
 ) {
   
   setIsImageDragging(true);
@@ -251,7 +269,7 @@ const [points, setPoints] = useState([
           case 5: // Left-middle
           {
             setImagePosition((prevImagePosition) => ({
-              x: prevImagePosition.x + dx,
+              x: prevImagePosition.x + (1.2*scale*dx/100),
               y: prevImagePosition.y,
             }));
             newXscale -= dx * 0.003;
@@ -264,19 +282,19 @@ const [points, setPoints] = useState([
               x: prevImagePosition.x,
               y: prevImagePosition.y - dy,
             }));
-            newXscale += dx * 0.002;
+            newXscale += dx * 0.003;
             break;
           }
     
           case 3: // Bottom-right
           {
-            newXscale += dx * 0.002;
+            newXscale += dx * 0.003;
             break;
           }
     
           case 7: // Right-middle
           {
-            newXscale += dx * 0.002;
+            newXscale += dx * 0.003;
             break;
           }
     
@@ -293,12 +311,14 @@ const [points, setPoints] = useState([
         switch (activeAnchor) {
           case 0: // Top-left
           {
+
             newYscale -= dy * 0.003;
             break;
           }
     
           case 1: // Top-right
           {
+            
             newYscale -= dy * 0.003;
             break;
           }
@@ -307,7 +327,7 @@ const [points, setPoints] = useState([
           {
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x,
-              y: prevImagePosition.y - dy,
+              y: prevImagePosition.y - (scale*dy)/100,
             }));
             newYscale -= dy * 0.003;
             break;
@@ -529,10 +549,15 @@ const [points, setPoints] = useState([
       setTextColor(data.textColor);
       console.log(data.textColor);
       setImagePosition(data.imagePosition);
+      setXscale(data.xscale);
+      setYscale(data.yscale);
+
     }, 100);
   };
 
   const download = async () => {
+    await new Promise((r) => setTimeout(r, 0.1));
+
     const canvas = document.getElementsByTagName("canvas")[0];
     const link = document.createElement("a");
     link.download = `${characters[character].name.replace(
@@ -601,6 +626,9 @@ const accentHex = (hex) => {
   }
 
   const copy = async () => {
+    //wait for 1 milisecond
+    await new Promise((r) => setTimeout(r, 0.1));
+
     const canvas = document.getElementsByTagName("canvas")[0];
     await navigator.clipboard.write([
       new ClipboardItem({
@@ -621,6 +649,8 @@ const accentHex = (hex) => {
       curve,
       textColor,
       imagePosition,
+      xscale,
+      yscale,
     };
 
     if (imageUrl) {
@@ -653,7 +683,7 @@ const accentHex = (hex) => {
   };
 
   return (
-    <div className="App" style={{ fontFamily: "YurukaStd" }}>
+    <div className="App" style={{ fontFamily: "YurukaStd" }} onClick={() => setSelectedElement(null)}>
       <Info open={infoOpen} handleClose={handleClose} />
       <div className="header">
         <h1 onClick={() => (window.location.href = "/")}>
@@ -663,7 +693,7 @@ const accentHex = (hex) => {
       <div className="container">
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
-            <div className="canvas">
+           <div className="canvas" onClick={(e) => e.stopPropagation() }>
               <Canvas
                 draw={draw}
                 onMouseDown={handleMouseDown}
@@ -673,6 +703,7 @@ const accentHex = (hex) => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+
                 style={{
                   cursor: isDragging || isImageDragging ? "grabbing" : "grab",
                   touchAction: "none",
@@ -743,7 +774,7 @@ const accentHex = (hex) => {
                 className="slider"
                 value={scale}
                 onChange={(e, v) => setScale(v)}
-                min={15}
+                min={40}
                 max={110}
                 step={1}
                 track={false}
@@ -847,7 +878,7 @@ const accentHex = (hex) => {
           </div>
           <div className="horizontal">
             <div style={{ paddingTop: "-10px" }}>
-              <h3> Reset Positions </h3>
+              <h3> Reset </h3>
 
               <div className="buttons" style={{ marginTop: "7px" }}>
                 <Grid container spacing={2} justifyContent="center">
