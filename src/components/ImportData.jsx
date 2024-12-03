@@ -138,6 +138,8 @@ const Importer = ({ callback }) => {
         var curve = false;
         var xscale = 1;
         var yscale = 1;
+        var font = "YurukaStd";
+        var textColor = null;
         
         // read data to variable
         if (jsonData.text) {
@@ -148,7 +150,7 @@ const Importer = ({ callback }) => {
             console.log("Scale: ", jsonData.scale);
             scale = jsonData.scale;
         }
-        if (jsonData.character) {
+        if (true) {
             console.log("Character: ", jsonData.character);
             character = jsonData.character;
         }
@@ -197,6 +199,16 @@ const Importer = ({ callback }) => {
                 imageUrl = jsonData.imageUrl;
             }
         }
+
+        if (jsonData.textColor) {
+            console.log("Text Color: ", jsonData.textColor);
+            textColor = jsonData.textColor;
+        }
+
+        if (jsonData.font) {
+            console.log("Font: ", jsonData.font);
+            font = jsonData.font;
+        }
         
         // redirect to the main page
         const data = {
@@ -215,11 +227,12 @@ const Importer = ({ callback }) => {
             rotate: rotate,
             curve: curve,
             text: text,
-            textColor: jsonData.textColor,
+            textColor: textColor,
             custom: jsonData.custom,
             imageUrl: imageUrl,
             xscale: xscale,
-            yscale: yscale
+            yscale: yscale,
+            font: font,
         };
 
         // parse data to callback function

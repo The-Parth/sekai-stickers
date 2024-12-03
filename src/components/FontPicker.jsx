@@ -6,11 +6,11 @@ const fonts = [
     { name: 'Impact', url: null},
     { name: 'Arial', url: null },
     { name: "Noto Sans", url: "./fonts/NotoSansJP.ttf", format: "truetype" },
-    { name: "Not Sans JP", url: './fonts/NotoSansJP.ttf', format: 'truetype' },
+    { name: "Noto Sans JP", url: './fonts/NotoSansJP.ttf', format: 'truetype' },
     { name: "Noto Sans KR", url: './fonts/NotoSansKR.ttf', format: 'truetype' },
 ];
 
-const FontPicker = ({ mainSetter }) => {
+const FontPicker = ({ mainSetter , value}) => {
     const [font, setFont] = useState(fonts[0]);
 
     let link = document.createElement('link');
@@ -52,26 +52,73 @@ const FontPicker = ({ mainSetter }) => {
         };
     }, [font, mainSetter]);
 
+    useEffect(() => {
+        if (value) {
+            const selectedFont = fonts.find((f) => f.name === value);
+            if (selectedFont) {
+                setFont(selectedFont);
+            }
+        }
+    }, [value]);
+
     return (
         <div>
-        <FormControl style={{ width: '12rem', marginTop: '1rem' }}>
-            <InputLabel id="font-picker-label">Font</InputLabel>
-            <Select
-                labelId="font-picker-label"
-                value={font}
-                onChange={(e) => setFont(e.target.value)}
-                label="Font"
-                style={{ height: '2.5rem' }} // Adjust the height as needed
-            >
-                {fonts.map((font, index) => (
-                    <MenuItem key={index} value={font}>
-                        {font.name}
-                    </MenuItem>
-                ))}
-            </Select>
-        </FormControl>
+            <FormControl style={{ width: '12rem', marginTop: '1rem' }}>
+                <InputLabel id="font-picker-label">Font</InputLabel>
+                <Select
+                    labelId="font-picker-label"
+                    value={font}
+                    onChange={(e) => setFont(e.target.value)}
+                    label="Font"
+                    style={{ height: '2.5rem' }} // Adjust the height as needed
+                >
+                    {fonts.map((fontOption, index) => (
+                        <MenuItem key={index} value={fontOption}>
+                            {fontOption.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         </div>
     );
 };
 
-export default FontPicker;
+function fontSetter(font, mainSetter) {
+    // Set the font based on the font name
+    // used to complement the json import
+    let link;
+    // get the font from the fonts array
+    const selectedFont = fonts.find((f) => f.name === font);
+    // Add the font to the document
+    if (selectedFont.url) {
+        if (selectedFont.url.includes('https://fonts.googleapis.com')) {
+            link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = selectedFont.url;
+            document.head.appendChild(link);
+            mainSetter(selectedFont.name);
+            console.log(`Font ${selectedFont.name} loaded from Google Fonts`);
+        }
+        else {
+            const str = `url(${selectedFont.url}) ${selectedFont.format ? `format('${selectedFont.format}')` : ''}`;
+            const fontFace = new FontFace(selectedFont.name, str);
+            fontFace.load().then((loadedFont) => {
+                document.fonts.add(loadedFont);
+                mainSetter(selectedFont.name);
+                console.log(`Font ${selectedFont.name} loaded`);
+            });
+        }
+    }
+    else {
+        mainSetter(selectedFont.name);
+    }
+
+    return () => {
+        if (link) {
+            document.head.removeChild(link);
+            console.log(`Font ${selectedFont.name} link removed`);
+        }
+    };
+}
+
+export { FontPicker, fontSetter };

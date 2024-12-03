@@ -10,52 +10,13 @@ import { Grid } from "@mui/material";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 import Importer from "./components/ImportData";
-import FontPicker from "./components/FontPicker";
+import { FontPicker, fontSetter } from "./components/FontPicker";
 
 const { ClipboardItem } = window;
 
 function App() {
   const [run, setRun] = useState(false);
-  // after 3 seconds, set run to true
-  useEffect(() => {
-    setTimeout(() => {
-      setRun(true);
-    }, 3000);
-  }, []);
-
   const [infoOpen, setInfoOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setInfoOpen(true);
-  };
-
-  const handleClose = () => {
-    setInfoOpen(false);
-  };
-
-  const isSmall = () => window.matchMedia("(max-width: 768px)").matches;
-
-
-  const resetTextposition = () => {
-
-    setPosition({
-      x: characters[character].defaultText.x + 50,
-      y: characters[character].defaultText.y + 60,
-    });
-    setFontSize(characters[character].defaultText.s);
-    setRotate(characters[character].defaultText.r);
-    setCurve(false);
-    setText(characters[character].defaultText.text);
-    setTextColor(characters[character].color);
-
-  };
-  const resetImageposition = () => {
-    setXscale(1);
-    setYscale(1);
-    setImagePosition({ x: 0, y: 0 });
-    setScale(85);
-  };
-
   const [character, setCharacter] = useState(49);
   const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
@@ -79,19 +40,61 @@ function App() {
   const [xscale, setXscale] = useState(1);
   const [yscale, setYscale] = useState(1);
   const [font, setFont] = useState("YurukaStd");
+
+  const isSmall = () => window.matchMedia("(max-width: 768px)").matches;
+
+  // after 3 seconds, set run to true
+  useEffect(() => {
+    setTimeout(() => {
+      setRun(true);
+    }, 3000);
+  }, []);
+
+  const handleClickOpen = () => {
+    setInfoOpen(true);
+  };
+
+  const handleClose = () => {
+    setInfoOpen(false);
+  };
+
+  const resetTextposition = () => {
+    setPosition({
+      x: characters[character].defaultText.x + 50,
+      y: characters[character].defaultText.y + 60,
+    });
+    setFontSize(characters[character].defaultText.s);
+    setRotate(characters[character].defaultText.r);
+    setCurve(false);
+    setText(characters[character].defaultText.text);
+    // check if custom image is loaded
+    if (imageUrl) {
+      setTextColor(accentHex(getDominantColor(img)));
+    } else {
+      setTextColor(characters[character].color);
+    }
+    fontSetter("YurukaStd", setFont);
+  };
+  const resetImageposition = () => {
+    setXscale(1);
+    setYscale(1);
+    setImagePosition({ x: 0, y: 0 });
+    setScale(85);
+  };
+
   const img = new Image();
-const pointSize=10;
-//use state of array of 8 points 
-const [points, setPoints] = useState([
-  { x: 0, y: 0 }, // Top-left
-  { x: 0, y: 0 }, // Top-right
-  { x: 0, y: 0 }, // Bottom-left
-  { x: 0, y: 0 }, // Bottom-right
-  { x: 0, y: 0 }, // Top-middle
-  { x: 0, y: 0 }, // Left-middle
-  { x: 0, y: 0 }, // Bottom-middle
-  { x: 0, y: 0 }, // Right-middle
-]);
+  const pointSize = 10;
+  //use state of array of 8 points
+  const [points, setPoints] = useState([
+    { x: 0, y: 0 }, // Top-left
+    { x: 0, y: 0 }, // Top-right
+    { x: 0, y: 0 }, // Bottom-left
+    { x: 0, y: 0 }, // Bottom-right
+    { x: 0, y: 0 }, // Top-middle
+    { x: 0, y: 0 }, // Left-middle
+    { x: 0, y: 0 }, // Bottom-middle
+    { x: 0, y: 0 }, // Right-middle
+  ]);
 
   //reset uploaded image's url and text colour when a new character is selected
   useEffect(() => {
@@ -143,12 +146,10 @@ const [points, setPoints] = useState([
       if (params.get("imageUrl")) {
         setImageUrl(decodeURIComponent(params.get("imageUrl")));
       }
-      if(params.get("xscale"))
-      {
+      if (params.get("xscale")) {
         setXscale(parseFloat(params.get("xscale")));
       }
-      if(params.get("yscale"))
-      {
+      if (params.get("yscale")) {
         setYscale(parseFloat(params.get("yscale")));
       }
       window.history.replaceState({}, document.title, location.pathname);
@@ -200,46 +201,43 @@ const [points, setPoints] = useState([
 
     const hRatio = canvas.width / img.width;
     const vRatio = canvas.height / img.height;
-    const ratio = (Math.min(hRatio, vRatio) *scale) / 100;
+    const ratio = (Math.min(hRatio, vRatio) * scale) / 100;
     const imgStartX = (canvas.width - img.width * ratio) / 2;
     const imgStartY = (canvas.height - img.height * ratio) / 2;
     const imgRenderedWidth = img.width * ratio;
     const imgRenderedHeight = img.height * ratio;
-    
-   if (
-  x > imgStartX-15 &&
-  x < imgStartX + imgRenderedWidth+15 &&
-  y > imgStartY-15 &&
-  y < imgStartY + imgRenderedHeight+15
-) {
 
-  setIsImageDragging(true);
-  for (let i = 0; i < points.length; i++) {
-    const { x: px, y: py } = points[i];
-    const touchBuffer = isSmall()? 45:0;
-    if (Math.abs(x - px) <= pointSize+touchBuffer && Math.abs(y - py) <= pointSize+touchBuffer) {
-      setActiveAnchor(i);
+    if (
+      x > imgStartX - 15 &&
+      x < imgStartX + imgRenderedWidth + 15 &&
+      y > imgStartY - 15 &&
+      y < imgStartY + imgRenderedHeight + 15
+    ) {
+      setIsImageDragging(true);
+      for (let i = 0; i < points.length; i++) {
+        const { x: px, y: py } = points[i];
+        const touchBuffer = isSmall() ? 45 : 0;
+        if (
+          Math.abs(x - px) <= pointSize + touchBuffer &&
+          Math.abs(y - py) <= pointSize + touchBuffer
+        ) {
+          setActiveAnchor(i);
+        }
       }
-    
-  }
-  
-  setDragStart({ x, y });
-  setSelectedElement("image");
-  
 
-  // console.log(points);
+      setDragStart({ x, y });
+      setSelectedElement("image");
 
-  return;
-}
-    
+      // console.log(points);
+
+      return;
+    }
+
     setSelectedElement(null);
   };
 
-
   const handleMouseMove = (e) => {
     if (!isDragging && !isImageDragging) return;
-
-   
 
     const canvas = e.target.getBoundingClientRect();
     const x = e.clientX - canvas.left;
@@ -252,8 +250,7 @@ const [points, setPoints] = useState([
         let newXscale = prevXscale;
         //this one was fun to figure out
         switch (activeAnchor) {
-          case 0: // Top-left
-          {
+          case 0: { // Top-left
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x + dx,
               y: prevImagePosition.y - dy,
@@ -261,9 +258,8 @@ const [points, setPoints] = useState([
             newXscale -= dx * 0.003;
             break;
           }
-    
-          case 2: // Bottom-left
-          {
+
+          case 2: { // Bottom-left
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x + dx,
               y: prevImagePosition.y,
@@ -271,19 +267,17 @@ const [points, setPoints] = useState([
             newXscale -= dx * 0.003;
             break;
           }
-    
-          case 5: // Left-middle
-          {
+
+          case 5: { // Left-middle
             setImagePosition((prevImagePosition) => ({
-              x: prevImagePosition.x + (1.2*scale*dx/100),
+              x: prevImagePosition.x + (1.2 * scale * dx) / 100,
               y: prevImagePosition.y,
             }));
             newXscale -= dx * 0.003;
             break;
           }
-    
-          case 1: // Top-right
-          {
+
+          case 1: { // Top-right
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x,
               y: prevImagePosition.y - dy,
@@ -291,80 +285,70 @@ const [points, setPoints] = useState([
             newXscale += dx * 0.003;
             break;
           }
-    
-          case 3: // Bottom-right
-          {
+
+          case 3: { // Bottom-right
             newXscale += dx * 0.003;
             break;
           }
-    
-          case 7: // Right-middle
-          {
+
+          case 7: { // Right-middle
             newXscale += dx * 0.003;
             break;
           }
-    
+
           default:
             break;
         }
-    
+
         return newXscale;
       });
-    
+
       setYscale((prevYscale) => {
         let newYscale = prevYscale;
-    
-        switch (activeAnchor) {
-          case 0: // Top-left
-          {
 
+        switch (activeAnchor) {
+          case 0: { // Top-left
             newYscale -= dy * 0.003;
             break;
           }
-    
-          case 1: // Top-right
-          {
-            
+
+          case 1: { // Top-right
             newYscale -= dy * 0.003;
             break;
           }
-    
-          case 4: // Top-middle
-          {
+
+          case 4: { // Top-middle
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x,
-              y: prevImagePosition.y - (scale*dy)/100,
+              y: prevImagePosition.y - (scale * dy) / 100,
             }));
             newYscale -= dy * 0.003;
             break;
           }
-    
-          case 2: // Bottom-left
-          {
+
+          case 2: { // Bottom-left
             newYscale += dy * 0.003;
             break;
           }
-    
-          case 3: // Bottom-right
-          {
+
+          case 3: { // Bottom-right
             newYscale += dy * 0.003;
             break;
           }
-    
-          case 6: // Bottom-middle
-          {
+
+          case 6: { // Bottom-middle
             newYscale += dy * 0.003;
             break;
           }
-    
+
           default:
             break;
         }
-    
+
         return newYscale;
       });
     };
-    
+
     if (isDragging) {
       setPosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
@@ -372,20 +356,18 @@ const [points, setPoints] = useState([
       }));
     }
 
-    if (isImageDragging&&activeAnchor==null) {
+    if (isImageDragging && activeAnchor == null) {
       setImagePosition((prevPosition) => ({
         x: prevPosition.x + deltaX,
         y: prevPosition.y - deltaY,
       }));
     }
-    if (isImageDragging&&activeAnchor!==null) { 
-
+    if (isImageDragging && activeAnchor !== null) {
       updateScale(activeAnchor, deltaX, deltaY);
     }
 
     setDragStart({ x, y });
   };
-  
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -393,7 +375,6 @@ const [points, setPoints] = useState([
     setActiveAnchor(null);
   };
 
-  
   const draw = (ctx) => {
     ctx.canvas.width = 400;
     ctx.canvas.height = 390;
@@ -413,47 +394,41 @@ const [points, setPoints] = useState([
         img.height,
         centerShift_x + imagePosition.x,
         centerShift_y - imagePosition.y,
-        img.width * ratio*xscale,
-        img.height * ratio*yscale
+        img.width * ratio * xscale,
+        img.height * ratio * yscale
       );
       if (selectedElement === "image") {
         ctx.lineWidth = 3;
         ctx.strokeStyle = "#00bcd4";
         const imageX = centerShift_x + imagePosition.x;
         const imageY = centerShift_y - imagePosition.y;
-        const imageWidth = img.width * ratio*xscale;
-        const imageHeight = img.height * ratio*yscale;
+        const imageWidth = img.width * ratio * xscale;
+        const imageHeight = img.height * ratio * yscale;
         ctx.strokeRect(imageX, imageY, imageWidth, imageHeight);
-    
-        const pointSize = 6; 
-    
+
+        const pointSize = 6;
+
         const points = [
-            { x: imageX, y: imageY }, // Top-left
-            { x: imageX + imageWidth, y: imageY }, // Top-right
-            { x: imageX, y: imageY + imageHeight }, // Bottom-left
-            { x: imageX + imageWidth, y: imageY + imageHeight }, // Bottom-right
-            { x: imageX + imageWidth / 2, y: imageY }, // Top-middle
-            { x: imageX, y: imageY + imageHeight / 2 }, // Left-middle
-            { x: imageX + imageWidth / 2, y: imageY + imageHeight }, // Bottom-middle
-            { x: imageX + imageWidth, y: imageY + imageHeight / 2 }, // Right-middle
+          { x: imageX, y: imageY }, // Top-left
+          { x: imageX + imageWidth, y: imageY }, // Top-right
+          { x: imageX, y: imageY + imageHeight }, // Bottom-left
+          { x: imageX + imageWidth, y: imageY + imageHeight }, // Bottom-right
+          { x: imageX + imageWidth / 2, y: imageY }, // Top-middle
+          { x: imageX, y: imageY + imageHeight / 2 }, // Left-middle
+          { x: imageX + imageWidth / 2, y: imageY + imageHeight }, // Bottom-middle
+          { x: imageX + imageWidth, y: imageY + imageHeight / 2 }, // Right-middle
         ];
 
         setPoints(points);
-      
 
-
-
-        
-    
-        points.forEach(point => {
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, pointSize+2, 0, Math.PI * 2);
-            ctx.fillStyle = "#00bcd4";
-            ctx.fill();
-            ctx.closePath();
+        points.forEach((point) => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, pointSize + 2, 0, Math.PI * 2);
+          ctx.fillStyle = "#00bcd4";
+          ctx.fill();
+          ctx.closePath();
         });
-        
-    }
+      }
       ctx.font = `${fontSize}px ${font}, SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
@@ -484,28 +459,31 @@ const [points, setPoints] = useState([
         if (selectedElement === "text") {
           ctx.lineWidth = 3;
           ctx.strokeStyle = "#00bcd4";
-        
-          //all that math for a text selection box 
-          const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
-          const lineHeight = fontSize * 1.3; 
-          const boxHeight = (lines.length * lineHeight);
-      
-          const padding = fontSize * 0.3;
-      
-          const totalHeight = boxHeight + padding * 2 + ((lines.length*spaceSize)/2 - fontSize);
-      
-          const yOffset = -(boxHeight / 2 + padding);
-      
-          ctx.strokeRect(
-              -maxWidth / 2 - padding,  
-              yOffset,                  
-              maxWidth + 2 * padding,  
-              totalHeight+((lines.length-1)*fontSize)           
+
+          //all that math for a text selection box
+          const maxWidth = Math.max(
+            ...lines.map((line) => ctx.measureText(line).width)
           );
-      }
-      
-      
-      
+          const lineHeight = fontSize * 1.3;
+          const boxHeight = lines.length * lineHeight;
+
+          const padding = fontSize * 0.3;
+
+          const totalHeight =
+            boxHeight +
+            padding * 2 +
+            ((lines.length * spaceSize) / 2 - fontSize);
+
+          const yOffset = -(boxHeight / 2 + padding);
+
+          ctx.strokeRect(
+            -maxWidth / 2 - padding,
+            yOffset,
+            maxWidth + 2 * padding,
+            totalHeight + (lines.length - 1) * fontSize
+          );
+        }
+
         ctx.restore();
       }
     }
@@ -553,11 +531,12 @@ const [points, setPoints] = useState([
       setRotate(data.rotate);
       setCurve(data.curve);
       setTextColor(data.textColor);
-      console.log(data.textColor);
       setImagePosition(data.imagePosition);
       setXscale(data.xscale);
       setYscale(data.yscale);
-
+      if (data.font) {
+        fontSetter(data.font, setFont);
+      }
     }, 100);
   };
 
@@ -566,12 +545,20 @@ const [points, setPoints] = useState([
 
     const canvas = document.getElementsByTagName("canvas")[0];
     const link = document.createElement("a");
-    link.download = `${characters[character].name.replace(
-      " ",
-      "_"
-    )}_sticker.png`;
-    link.href = canvas.toDataURL();
-    link.click();
+    var defName = "";
+    if (imageUrl) {
+      defName = "custom_image_data";
+    } else {
+      defName = `${characters[character].name.replace(" ", "_")}_data`;
+    }
+
+    const fileName = window.prompt("Enter the file name", `${defName}`);
+
+    if (fileName) {
+      link.download = fileName + ".png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
   };
 
   const getDominantColor = (imageObject) => {
@@ -585,15 +572,15 @@ const [points, setPoints] = useState([
     return HEX;
   };
 
-const accentHex = (hex) => {
+  const accentHex = (hex) => {
     let r = 255 - parseInt(hex.substring(1, 3), 16);
     let g = 255 - parseInt(hex.substring(3, 5), 16);
     let b = 255 - parseInt(hex.substring(5, 7), 16);
 
-    const toHex = (c) => c.toString(16).padStart(2, '0');
+    const toHex = (c) => c.toString(16).padStart(2, "0");
 
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
+  };
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -657,6 +644,7 @@ const accentHex = (hex) => {
       imagePosition,
       xscale,
       yscale,
+      font,
     };
 
     if (imageUrl) {
@@ -689,7 +677,11 @@ const accentHex = (hex) => {
   };
 
   return (
-    <div className="App" style={{ fontFamily: "YurukaStd" }} onClick={() => setSelectedElement(null)}>
+    <div
+      className="App"
+      style={{ fontFamily: "YurukaStd" }}
+      onClick={() => setSelectedElement(null)}
+    >
       <Info open={infoOpen} handleClose={handleClose} />
       <div className="header">
         <h1 onClick={() => (window.location.href = "/")}>
@@ -699,7 +691,7 @@ const accentHex = (hex) => {
       <div className="container">
         <div className="vertical" id="canvas-container">
           <div className="horizontal">
-           <div className="canvas" onClick={(e) => e.stopPropagation() }>
+            <div className="canvas" onClick={(e) => e.stopPropagation()}>
               <Canvas
                 draw={draw}
                 onMouseDown={handleMouseDown}
@@ -709,7 +701,6 @@ const accentHex = (hex) => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-
                 style={{
                   cursor: isDragging || isImageDragging ? "grabbing" : "grab",
                   touchAction: "none",
@@ -886,7 +877,7 @@ const accentHex = (hex) => {
             className="horizontal"
             style={{ marginTop: "7px", marginBottom: "7px" }}
           >
-            <FontPicker mainSetter={setFont} />
+            <FontPicker mainSetter={setFont} value={font} />
           </div>
           <div className="horizontal">
             <div style={{ paddingTop: "-10px" }}>
