@@ -32,6 +32,9 @@ function App() {
     setInfoOpen(false);
   };
 
+  const isSmall = () => window.matchMedia("(max-width: 768px)").matches;
+
+
   const resetTextposition = () => {
 
     setPosition({
@@ -202,21 +205,22 @@ const [points, setPoints] = useState([
     const imgRenderedHeight = img.height * ratio;
     
    if (
-  x > imgStartX - 30 &&
-  x < imgStartX + imgRenderedWidth + 30 &&
-  y > imgStartY - 30 &&
-  y < imgStartY + imgRenderedHeight + 30
+  x > imgStartX - 10 &&
+  x < imgStartX + imgRenderedWidth + 10 &&
+  y > imgStartY - 10 &&
+  y < imgStartY + imgRenderedHeight + 10
 ) {
-  
+
   setIsImageDragging(true);
   for (let i = 0; i < points.length; i++) {
     const { x: px, y: py } = points[i];
-    if (Math.abs(x - px) <= pointSize && Math.abs(y - py) <= pointSize) {
-      console.log("Point clicked at index:", i);
+    const touchBuffer = isSmall()? 45:0;
+    if (Math.abs(x - px) <= pointSize+touchBuffer && Math.abs(y - py) <= pointSize+touchBuffer) {
       setActiveAnchor(i);
       }
     
   }
+  
   setDragStart({ x, y });
   setSelectedElement("image");
   
@@ -516,7 +520,7 @@ const [points, setPoints] = useState([
   };
 
   const handleTouchMove = (e) => {
-    // Prevent the default touch action
+    e.preventDefault();
     const touch = e.touches[0];
     handleMouseMove({
       clientX: touch.clientX,
@@ -774,7 +778,7 @@ const accentHex = (hex) => {
                 className="slider"
                 value={scale}
                 onChange={(e, v) => setScale(v)}
-                min={40}
+                min={50}
                 max={110}
                 step={1}
                 track={false}
