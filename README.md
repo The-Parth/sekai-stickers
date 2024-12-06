@@ -38,6 +38,8 @@ Saw the original project and thought it was cool, but wanted some new features. 
 - [x] Custom Text Colors support
 - [x] Touch/Mouse drag support - Thanks [NonPanda](https://github.com/NonPanda)
 - [x] A better layout for desktop screens
+- [x] Multi-Font support
+- [x] Multi-Game support
 
 ## ⚒️ 》Contributing
 
