@@ -5,10 +5,10 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import { useState, useMemo } from "react";
-import characters from "../characters.json";
+import { useState, useMemo, useEffect } from "react";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
-export default function Picker({ setCharacter }) {
+export default function Picker({ setCharacter, setCharacters, game, setGame, characters }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [search, setSearch] = useState("");
 
@@ -61,9 +61,53 @@ export default function Picker({ setCharacter }) {
       }
       return null;
     });
-  }, [search, setCharacter]);
+  }, [characters, search, setCharacter]);
+
+  const files = [
+    { name: "Project Sekai", value: "sekai" },
+    { name: "Arcaea", value: "arcaea" },
+  ];
+
+  const gameSetter = (selectedGame) => {
+    if (selectedGame === "sekai") {
+      import("../sekai.json").then((ens) => {
+        setCharacters(ens.default);
+        setCharacter(49);
+      }
+      );
+    } else if (selectedGame === "arcaea") {
+      import("../arcaea.json").then((ens) => {
+        setCharacters(ens.default);
+        setCharacter(5);
+      });
+    }
+  };
+
+  useEffect(() => {
+    gameSetter(game);
+  }, [game]);
+
 
   return (
+    <div className="horizontal">
+        <div>
+        <FormControl style={{ width: "12rem", margin: "1rem" }}>
+          <InputLabel id="sekai-picker-label">Game</InputLabel>
+          <Select
+            labelId="sekai-picker-label"
+            value={game}
+            onChange={(e) => setGame(e.target.value)}
+            label="Game"
+            style={{ height: "2.5rem" }}
+          >
+            {files.map((file, index) => (
+              <MenuItem key={index} value={file.value}>
+                {file.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
     <div>
       <Button
         aria-describedby={id}
@@ -110,6 +154,7 @@ export default function Picker({ setCharacter }) {
           </ImageList>
         </div>
       </Popover>
+    </div>
     </div>
   );
 }

@@ -15,6 +15,7 @@ const Importer2 = () => {
         var text ="";
         var curve = false;
         var textColor = "#000000";
+        var game = "sekai";
         // read data to variable
         if (jsonData.text) {
             console.log("Text: ", jsonData.text);
@@ -56,6 +57,8 @@ const Importer2 = () => {
             console.log("Text Color: ", jsonData.textColor);
             textColor = jsonData.textColor
         }
+
+          
       
         // redirect to the main page
         var str =
@@ -140,6 +143,7 @@ const Importer = ({ callback }) => {
         var yscale = 1;
         var font = "YurukaStd";
         var textColor = null;
+        var game = "sekai";
         
         // read data to variable
         if (jsonData.text) {
@@ -209,6 +213,11 @@ const Importer = ({ callback }) => {
             console.log("Font: ", jsonData.font);
             font = jsonData.font;
         }
+
+        if (jsonData.game) {
+            console.log("Game: ", jsonData.game);
+            game = jsonData.game;
+        }
         
         // redirect to the main page
         const data = {
@@ -233,6 +242,7 @@ const Importer = ({ callback }) => {
             xscale: xscale,
             yscale: yscale,
             font: font,
+            game: game
         };
 
         // parse data to callback function

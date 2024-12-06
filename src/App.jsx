@@ -1,7 +1,7 @@
 import "./App.css";
 import Canvas from "./components/Canvas";
 import { useState, useEffect } from "react";
-import characters from "./characters.json";
+import defaultChar from "./sekai.json";
 import Slider from "@mui/material/Slider";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -17,6 +17,7 @@ const { ClipboardItem } = window;
 function App() {
   const [run, setRun] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [characters, setCharacters] = useState(defaultChar);
   const [character, setCharacter] = useState(49);
   const [scale, setScale] = useState(85);
   const [text, setText] = useState(characters[character].defaultText.text);
@@ -39,6 +40,7 @@ function App() {
   const [activeAnchor, setActiveAnchor] = useState(null);
   const [xscale, setXscale] = useState(1);
   const [yscale, setYscale] = useState(1);
+  const [game, setGame] = useState("sekai");
   const [font, setFont] = useState("YurukaStd");
 
   const isSmall = () => window.matchMedia("(max-width: 768px)").matches;
@@ -250,7 +252,8 @@ function App() {
         let newXscale = prevXscale;
         //this one was fun to figure out
         switch (activeAnchor) {
-          case 0: { // Top-left
+          case 0: {
+            // Top-left
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x + dx,
               y: prevImagePosition.y - dy,
@@ -259,7 +262,8 @@ function App() {
             break;
           }
 
-          case 2: { // Bottom-left
+          case 2: {
+            // Bottom-left
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x + dx,
               y: prevImagePosition.y,
@@ -268,7 +272,8 @@ function App() {
             break;
           }
 
-          case 5: { // Left-middle
+          case 5: {
+            // Left-middle
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x + (1.2 * scale * dx) / 100,
               y: prevImagePosition.y,
@@ -277,7 +282,8 @@ function App() {
             break;
           }
 
-          case 1: { // Top-right
+          case 1: {
+            // Top-right
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x,
               y: prevImagePosition.y - dy,
@@ -286,12 +292,14 @@ function App() {
             break;
           }
 
-          case 3: { // Bottom-right
+          case 3: {
+            // Bottom-right
             newXscale += dx * 0.003;
             break;
           }
 
-          case 7: { // Right-middle
+          case 7: {
+            // Right-middle
             newXscale += dx * 0.003;
             break;
           }
@@ -307,17 +315,20 @@ function App() {
         let newYscale = prevYscale;
 
         switch (activeAnchor) {
-          case 0: { // Top-left
+          case 0: {
+            // Top-left
             newYscale -= dy * 0.003;
             break;
           }
 
-          case 1: { // Top-right
+          case 1: {
+            // Top-right
             newYscale -= dy * 0.003;
             break;
           }
 
-          case 4: { // Top-middle
+          case 4: {
+            // Top-middle
             setImagePosition((prevImagePosition) => ({
               x: prevImagePosition.x,
               y: prevImagePosition.y - (scale * dy) / 100,
@@ -326,17 +337,20 @@ function App() {
             break;
           }
 
-          case 2: { // Bottom-left
+          case 2: {
+            // Bottom-left
             newYscale += dy * 0.003;
             break;
           }
 
-          case 3: { // Bottom-right
+          case 3: {
+            // Bottom-right
             newYscale += dy * 0.003;
             break;
           }
 
-          case 6: { // Bottom-middle
+          case 6: {
+            // Bottom-middle
             newYscale += dy * 0.003;
             break;
           }
@@ -514,30 +528,33 @@ function App() {
   };
 
   const importDataCallback = (data) => {
-    if (data.imageUrl) {
-      setImageUrl(data.imageUrl);
-      img.src = data.imageUrl;
-    } else {
-      setImageUrl(null);
-      setCharacter(data.character);
-      img.src = "/img/" + characters[data.character].img;
-    }
+    setGame(data.game ? data.game : "sekai");
     setTimeout(() => {
-      setScale(data.scale);
-      setText(data.text);
-      setPosition(data.position);
-      setFontSize(data.fontSize);
-      setSpaceSize(data.spaceSize);
-      setRotate(data.rotate);
-      setCurve(data.curve);
-      setTextColor(data.textColor);
-      setImagePosition(data.imagePosition);
-      setXscale(data.xscale);
-      setYscale(data.yscale);
-      if (data.font) {
-        fontSetter(data.font, setFont);
+      if (data.imageUrl) {
+        setImageUrl(data.imageUrl);
+        img.src = data.imageUrl;
+      } else {
+        setImageUrl(null);
+        setCharacter(data.character);
+        img.src = "/img/" + characters[data.character].img;
       }
-    }, 100);
+      setTimeout(() => {
+        setScale(data.scale);
+        setText(data.text);
+        setPosition(data.position);
+        setFontSize(data.fontSize);
+        setSpaceSize(data.spaceSize);
+        setRotate(data.rotate);
+        setCurve(data.curve);
+        setTextColor(data.textColor);
+        setImagePosition(data.imagePosition);
+        setXscale(data.xscale);
+        setYscale(data.yscale);
+        if (data.font) {
+          fontSetter(data.font, setFont);
+        }
+      }, 80);
+    }, 80);
   };
 
   const download = async () => {
@@ -645,6 +662,7 @@ function App() {
       xscale,
       yscale,
       font,
+      game
     };
 
     if (imageUrl) {
@@ -854,7 +872,13 @@ function App() {
           </div>
 
           <div className="picker" style={{ marginTop: "7px" }}>
-            <Picker setCharacter={setCharacter} />
+            <Picker
+              setCharacter={setCharacter}
+              setCharacters={setCharacters}
+              game={game}
+              setGame={setGame}
+              characters={characters}
+            />
           </div>
 
           <div className="horizontal">

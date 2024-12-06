@@ -1,0 +1,317 @@
+[
+  {
+    "id": "1",
+    "name": "Ayu",
+    "character": "ayu",
+    "img": "arcaea/ayu.png",
+    "fillColor": "#3BEADF",
+    "color": "#30bbb2",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "2",
+    "name": "Eto",
+    "character": "eto",
+    "img": "arcaea/eto.png",
+    "fillColor": "#79cfe8",
+    "color": "#0b8eb7",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "3",
+    "name": "Hikari 01",
+    "character": "hikari",
+    "img": "arcaea/hikari.png",
+    "fillColor": "#ffe7b5",
+    "color": "#ef7d04",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "4",
+    "name": "Ilith",
+    "character": "ilith",
+    "img": "arcaea/ilith.png",
+    "fillColor": "#f58194",
+    "color": "#c61632",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "5",
+    "name": "Kou",
+    "character": "kou",
+    "img": "arcaea/kou.png",
+    "fillColor": "#ffd5d5",
+    "color": "#f04f87",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "6",
+    "name": "Lagrange",
+    "character": "lagrange",
+    "img": "arcaea/lagrange.png",
+    "fillColor": "#bbd7fa",
+    "color": "#4c8cdd",
+    "defaultText": {
+      "text": "BRB",
+      "x": 98,
+      "y": 66,
+      "r": -4,
+      "s": 43
+    }
+  },
+  {
+    "id": "7",
+    "name": "Luna",
+    "character": "luna",
+    "img": "arcaea/luna.png",
+    "fillColor": "#c09edd",
+    "color": "#7743a3",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "8",
+    "name": "Maya",
+    "character": "maya",
+    "img": "arcaea/maya.png",
+    "fillColor": "#f1dece",
+    "color": "#f4cfb7",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "9",
+    "name": "Nami",
+    "character": "nami",
+    "img": "arcaea/nami.png",
+    "fillColor": "#f9c2cb",
+    "color": "#f62f51",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "10",
+    "name": "Shirahime",
+    "character": "shirahime",
+    "img": "arcaea/shirahime.png",
+    "fillColor": "#c3d5ff",
+    "color": "#657ae7",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "11",
+    "name": "Tairitsu 01",
+    "character": "tairitsu",
+    "img": "arcaea/tairitsu.png",
+    "fillColor": "#80e8d5",
+    "color": "#329f8c",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "12",
+    "name": "Vita",
+    "character": "vita",
+    "img": "arcaea/vita.png",
+    "fillColor": "#f58194",
+    "color": "#c81c38",
+    "defaultText": {
+      "text": "OK!",
+      "x": 148,
+      "y": 65,
+      "r": -1.5,
+      "s": 42
+    }
+  },
+  {
+    "id": "13",
+    "name": "Hikari 02",
+    "character": "hikari",
+    "img": "arcaea/hikari2.png",
+    "fillColor": "#ffe7b5",
+    "color": "#ef7d04",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "14",
+    "name": "Tairitsu 02",
+    "character": "tairitsu",
+    "img": "arcaea/tairitsu2.png",
+    "fillColor": "#80e8d5",
+    "color": "#329f8c",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "15",
+    "name": "Kanae",
+    "character": "kanae",
+    "img": "arcaea/kanae.png",
+    "fillColor": "#fbd0ad",
+    "color": "#FFB87F",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "16",
+    "name": "Saya",
+    "character": "saya",
+    "img": "arcaea/saya.png",
+    "fillColor": "#80e8d5",
+    "color": "#329f8c",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "17",
+    "name": "Tairitsu 03",
+    "character": "tairitsu",
+    "img": "arcaea/tairitsu3.png",
+    "fillColor": "#80e8d5",
+    "color": "#329f8c",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "18",
+    "name": "Shirabe",
+    "character": "shirabe",
+    "img": "arcaea/shirabe.png",
+    "fillColor": "#E5616D",
+    "color": "#974149",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "19",
+    "name": "Lethe",
+    "character": "lethe",
+    "img": "arcaea/lethe.png",
+    "fillColor": "#F6D3C2",
+    "color": "#E3BAA7",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "20",
+    "name": "Insight",
+    "character": "insight",
+    "img": "arcaea/insight.png",
+    "fillColor": "#C9CBEA",
+    "color": "#a8a9c3",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  },
+  {
+    "id": "21",
+    "name": "Aichan",
+    "character": "aichan",
+    "img": "arcaea/aichan.png",
+    "fillColor": "#CDB4E8",
+    "color": "#a28fb6",
+    "defaultText": {
+      "text": "something",
+      "x": 148,
+      "y": 58,
+      "r": -2,
+      "s": 42
+    }
+  }
+]
