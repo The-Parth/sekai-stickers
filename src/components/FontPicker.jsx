@@ -5,6 +5,8 @@ const fonts = [
     { name: "YurukaStd", url: "./fonts/YurukaStd.woff2", format: "woff2"},
     { name: 'Impact', url: null},
     { name: 'Arial', url: null },
+    { name: 'Touhou 6', url: './fonts/Touhou6.ttf', format: 'truetype' },
+    { name: "Undertale", url: './fonts/Determination.woff', format: 'woff' },
     { name: "Noto Sans", url: "./fonts/NotoSansJP.ttf", format: "truetype" },
     { name: "Noto Sans JP", url: './fonts/NotoSansJP.ttf', format: 'truetype' },
     { name: "Noto Sans KR", url: './fonts/NotoSansKR.ttf', format: 'truetype' },

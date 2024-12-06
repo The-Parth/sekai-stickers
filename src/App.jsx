@@ -443,7 +443,7 @@ function App() {
           ctx.closePath();
         });
       }
-      ctx.font = `${fontSize}px ${font}, SSFangTangTi`;
+      ctx.font = `${fontSize}px "${font}", SSFangTangTi`;
       ctx.lineWidth = 9;
       ctx.save();
 
